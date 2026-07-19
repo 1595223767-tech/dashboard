@@ -178,39 +178,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 <body>
 <div class="container">
   <div class="header">
-    <h1>🚀 鹅选美好生活月 · 代理商打榜赛</h1>
-    <div class="subtitle">腾讯营销 · 消电日百 &nbsp;|&nbsp; 2026.7.20 → 8.20 &nbsp;|&nbsp; 代理商榜</div>
+    <h1>🚀 美好生活月 · 代理商打榜赛</h1>
+    <div class="subtitle">腾讯营销 · 消电日百 &nbsp;|&nbsp; 2026.7.20 → 8.20</div>
     <div class="top-actions">
-      <button class="top-btn" onclick="shotFullDashboard()">📸 一键截图</button>
+      <button class="top-btn" onclick="shotLongImg()">📸 生成长图</button>
       <a class="top-btn" href="http://1.14.143.207/peipei-mhshj/" target="_blank">↗ 客户榜</a>
       <button class="top-btn" id="adminBtn" onclick="clickAdmin()">🔒 管理</button>
     </div>
-    <div class="countdown-bar">
-      <div class="countdown-item"><div class="num">4</div><div class="unit">天</div></div>
-      <div class="countdown-item"><div class="num">05</div><div class="unit">时</div></div>
-      <div class="countdown-item"><div class="num">开赛倒计时</div><div class="unit">距清凉节</div></div>
+    <div class="countdown-bar" id="countdownBar">
+      <!-- 由 JS 动态渲染真实倒计时 -->
     </div>
   </div>
   <div class="section">
-    <h3><span class="left">作战节奏 · 4 大节点</span></h3>
-    <div class="timeline">
-      <div class="tl-node now"><div class="dot"></div><div class="name">❄️ 清凉美好节</div><div class="date">7/20 - 7/25</div></div>
-      <div class="tl-node"><div class="dot"></div><div class="name">🌿 养生美好节</div><div class="date">7/25 - 8/7</div></div>
-      <div class="tl-node"><div class="dot"></div><div class="name">✨ 焕新美好节</div><div class="date">8/8 - 8/20</div></div>
-      <div class="tl-node"><div class="dot"></div><div class="name">🏆 收官盛典</div><div class="date">8/18 - 8/20</div></div>
+    <h3><span class="left">作战节奏 · 3 周冲刺</span></h3>
+    <div class="timeline" id="timelineBox">
+      <!-- 由 JS 动态渲染，根据今天日期高亮当前周 -->
     </div>
   </div>
   <div class="stats" id="kpiRow"></div>
   <div class="tabs" id="stageTabs">
     <div class="tab active" data-stage="total" onclick="switchStage(this)">🏅 总榜</div>
-    <div class="tab" data-stage="qingliang" onclick="switchStage(this)">❄️ 清凉节</div>
-    <div class="tab" data-stage="yangsheng" onclick="switchStage(this)">🌿 养生节</div>
-    <div class="tab" data-stage="huanxin" onclick="switchStage(this)">✨ 焕新节</div>
+    <div class="tab" data-stage="w1" onclick="switchStage(this)">第 1 周</div>
+    <div class="tab" data-stage="w2" onclick="switchStage(this)">第 2 周</div>
+    <div class="tab" data-stage="w3" onclick="switchStage(this)">第 3 周</div>
   </div>
   <div class="section">
     <h3>
       <span class="left">代理商实时排行榜 <span class="sub" id="stageLabel">· 总榜</span></span>
-      <span class="actions"><button class="mini-btn" onclick="shotEachAgent()">📸 逐家生成截图</button></span>
+      <span class="actions"><button class="mini-btn" onclick="shotLongImg()">📸 生成排行长图</button></span>
     </h3>
     <div class="data-source" id="dataSourceTip">
       <span>📊 <b>客户分 70</b>：<span style="color:#a0abc4">待客户榜开赛（7/20）</span> · <b>代理协同 30</b>：<span id="mockStatus">比赛结束后统一上传</span></span>
@@ -226,25 +221,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
     </div>
     <div id="rankList"></div>
   </div>
-  <div class="section">
-    <h3><span class="left">激励政策墙</span></h3>
-    <div class="p-tabs">
-      <div class="p-tab active" onclick="switchPolicy(this,'agent')">🎖️ 代理侧政策</div>
-      <div class="p-tab" onclick="switchPolicy(this,'client')">🎁 客户侧政策</div>
-    </div>
-    <div id="policyAgent" class="p-grid">
-      <div class="p-card gold"><span class="p-tag">卓越成长伙伴</span><h5>🥇 卓越成长伙伴 · 金奖</h5><div class="p-desc">荣誉证书 + 官方案例包装</div><div class="p-bar"><div style="width:68%"></div></div><div class="p-foot"><span id="top1Name">当前 Top1：—</span><span id="top1Score">综合分 —</span></div></div>
-      <div class="p-card gold"><span class="p-tag">卓越成长伙伴</span><h5>🥈 卓越成长伙伴 · 银奖</h5><div class="p-desc">荣誉证书 + 官方案例包装</div><div class="p-bar"><div style="width:54%"></div></div><div class="p-foot"><span id="darkName">当前 Top2：—</span><span id="darkChg">综合分 —</span></div></div>
-      <div class="p-card gold"><span class="p-tag">卓越成长伙伴</span><h5>🥉 卓越成长伙伴 · 铜奖</h5><div class="p-desc">荣誉证书 + 官方案例包装</div><div class="p-bar"><div style="width:82%"></div></div><div class="p-foot"><span id="baseName">当前 Top3：—</span><span id="baseScore">综合分 —</span></div></div>
-      <div class="p-card"><span class="p-tag">说明</span><h5>📋 评奖规则</h5><div class="p-desc">按综合分排名评选前 3 名代理商，均颁发「卓越成长伙伴」（金/银/铜），奖励为荣誉证书 + 官方案例包装。</div><div class="p-bar"><div style="width:100%;background:#c8d0e0"></div></div><div class="p-foot"><span>奖项状态</span><span style="color:#3b7a1f">已确认</span></div></div>
-    </div>
-    <div id="policyClient" style="display:none">
-      <div class="agent-picker"><span>选择代理商：</span><select id="agentSel" onchange="renderClientPolicy()"></select><span style="color:#a0abc4">系统按名下客户自动匹配</span></div>
-      <div id="clientPolicyGrid" class="p-grid"></div>
-    </div>
-  </div>
   <div class="rule-banner" style="margin-top:8px">📊 <b>综合分 100</b> = 客户分 70（名下客户在客户榜的平均分）+ 代理协同分 30（带动客户报名数 10 + 新客拓展数 10 + 比赛配合度 10）</div>
-  <div class="footer-note">数据 T+1 更新 · 数据源：通用分析数据集 + 上传数据 · © 腾讯营销</div>
+  <div class="footer-note">数据每日 13:00 自动同步 · © 腾讯营销</div>
 </div>
 <div class="modal" id="loginModal">
   <div class="modal-box">
@@ -283,8 +261,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 <script>
 const CLIENT_DASH_PROCESS={"开域国际":{"room_count":5,"spend_total":312.77,"achievement_rate":67.0,"stage_dist":{"cold":5},"metrics":{"qyt":0.0,"zt":80.0,"allsel":80.0,"four_m":100.0,"prod_aggr":0.0,"pk_youtou":20.0,"aigc":100.0,"max30":0,"oneclick":0,"cnt_per_acct":33.84,"ad_per_acct":6.37,"dup_rate":38.48,"acct_cnt":2.79,"ctr":4.51,"skip3s":70.04,"enter":2.25,"click":42.9,"order":6.67}},"疾风文化":{"room_count":4,"spend_total":4162.47,"achievement_rate":39.7,"stage_dist":{"leap":3,"cold":1},"metrics":{"qyt":50.0,"zt":25.0,"allsel":25.0,"four_m":25.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":100.0,"max30":11.34,"oneclick":34.28,"cnt_per_acct":8.49,"ad_per_acct":4.7,"dup_rate":21.31,"acct_cnt":2.66,"ctr":1.86,"skip3s":59.06,"enter":1.37,"click":57.79,"order":21.38}},"深圳响当当":{"room_count":1,"spend_total":0,"achievement_rate":0,"stage_dist":{"cold":1},"metrics":{"qyt":0.0,"zt":0.0,"allsel":0.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":0,"max30":0,"oneclick":0,"cnt_per_acct":0,"ad_per_acct":0,"dup_rate":0,"acct_cnt":0.0,"ctr":0,"skip3s":0,"enter":0,"click":0,"order":0}},"上海亦芯":{"room_count":5,"spend_total":12658.38,"achievement_rate":55.5,"stage_dist":{"leap":2,"cold":3},"metrics":{"qyt":20.0,"zt":60.0,"allsel":60.0,"four_m":80.0,"prod_aggr":0.0,"pk_youtou":20.0,"aigc":74.08,"max30":0.49,"oneclick":11.78,"cnt_per_acct":138.8,"ad_per_acct":19.24,"dup_rate":39.59,"acct_cnt":2.52,"ctr":3.42,"skip3s":66.64,"enter":1.45,"click":66.87,"order":5.45}},"十三邀":{"room_count":2,"spend_total":4253.25,"achievement_rate":62.9,"stage_dist":{"leap":1,"cold":1},"metrics":{"qyt":50.0,"zt":50.0,"allsel":50.0,"four_m":50.0,"prod_aggr":50.0,"pk_youtou":0.0,"aigc":100.0,"max30":50.11,"oneclick":99.77,"cnt_per_acct":114.45,"ad_per_acct":32.63,"dup_rate":45.79,"acct_cnt":3.0,"ctr":2.89,"skip3s":87.83,"enter":2.62,"click":6.39,"order":8.25}},"厚拓科技":{"room_count":22,"spend_total":167556.5,"achievement_rate":43.2,"stage_dist":{"head":5,"leap":3,"cold":14},"metrics":{"qyt":13.6,"zt":50.0,"allsel":50.0,"four_m":18.2,"prod_aggr":0.0,"pk_youtou":18.2,"aigc":75.33,"max30":61.18,"oneclick":56.45,"cnt_per_acct":45.31,"ad_per_acct":10.36,"dup_rate":39.5,"acct_cnt":4.21,"ctr":2.08,"skip3s":59.41,"enter":1.37,"click":68.1,"order":9.14}},"厦门众联":{"room_count":2,"spend_total":5410.01,"achievement_rate":63.2,"stage_dist":{"leap":1,"cold":1},"metrics":{"qyt":0.0,"zt":100.0,"allsel":100.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":100.0,"aigc":100.0,"max30":100.0,"oneclick":0.0,"cnt_per_acct":160.74,"ad_per_acct":18.41,"dup_rate":40.88,"acct_cnt":2.0,"ctr":3.31,"skip3s":63.94,"enter":2.53,"click":52.4,"order":9.19}},"广州晨曦":{"room_count":20,"spend_total":40950.99,"achievement_rate":46.6,"stage_dist":{"head":2,"leap":4,"cold":14},"metrics":{"qyt":15.0,"zt":50.0,"allsel":50.0,"four_m":40.0,"prod_aggr":5.0,"pk_youtou":40.0,"aigc":62.09,"max30":96.83,"oneclick":19.41,"cnt_per_acct":76.17,"ad_per_acct":17.16,"dup_rate":36.07,"acct_cnt":3.56,"ctr":2.96,"skip3s":58.17,"enter":1.87,"click":67.46,"order":6.28}},"渠网在线":{"room_count":3,"spend_total":2659.81,"achievement_rate":33.3,"stage_dist":{"leap":1,"cold":2},"metrics":{"qyt":0.0,"zt":33.3,"allsel":33.3,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":100.0,"max30":47.24,"oneclick":0.0,"cnt_per_acct":17.55,"ad_per_acct":3.71,"dup_rate":11.47,"acct_cnt":7.47,"ctr":3.37,"skip3s":68.11,"enter":2.09,"click":41.07,"order":5.78}},"微盟":{"room_count":13,"spend_total":37955.62,"achievement_rate":38.9,"stage_dist":{"head":1,"leap":5,"cold":7},"metrics":{"qyt":7.7,"zt":30.8,"allsel":30.8,"four_m":7.7,"prod_aggr":7.7,"pk_youtou":30.8,"aigc":91.39,"max30":50.28,"oneclick":0.0,"cnt_per_acct":53.2,"ad_per_acct":10.17,"dup_rate":22.8,"acct_cnt":2.38,"ctr":1.97,"skip3s":63.66,"enter":1.28,"click":64.01,"order":3.81}},"北京众赢":{"room_count":8,"spend_total":14393.43,"achievement_rate":36.6,"stage_dist":{"leap":4,"cold":4},"metrics":{"qyt":12.5,"zt":50.0,"allsel":50.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":67.52,"max30":48.95,"oneclick":23.7,"cnt_per_acct":16.24,"ad_per_acct":4.9,"dup_rate":17.67,"acct_cnt":3.63,"ctr":2.16,"skip3s":67.13,"enter":1.81,"click":63.2,"order":12.26}},"卓鹅":{"room_count":1,"spend_total":6844.28,"achievement_rate":44.0,"stage_dist":{"leap":1},"metrics":{"qyt":0.0,"zt":0.0,"allsel":0.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":0,"max30":20.0,"oneclick":20.0,"cnt_per_acct":22.0,"ad_per_acct":5.0,"dup_rate":16.2,"acct_cnt":1.0,"ctr":3.77,"skip3s":63.6,"enter":3.1,"click":65.9,"order":12.99}},"小牛传媒":{"room_count":17,"spend_total":47798.5,"achievement_rate":54.5,"stage_dist":{"head":1,"leap":8,"cold":8},"metrics":{"qyt":23.5,"zt":58.8,"allsel":58.8,"four_m":5.9,"prod_aggr":0.0,"pk_youtou":52.9,"aigc":93.18,"max30":53.11,"oneclick":36.58,"cnt_per_acct":122.14,"ad_per_acct":18.78,"dup_rate":37.04,"acct_cnt":3.19,"ctr":2.68,"skip3s":46.71,"enter":2.0,"click":59.83,"order":10.84}}};
 const RAW_DATA=[{"name":"疾风文化","client_cnt":1,"clients":[{"name":"宝家洁","score":null}],"industries":[]},{"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":null}],"industries":[]},{"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":null}],"industries":[]},{"name":"厚拓科技","client_cnt":4,"clients":[{"name":"太力","score":null},{"name":"上海成事好物","score":null},{"name":"迈巴勒","score":null},{"name":"徕芬","score":null}],"industries":[]},{"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":null},{"name":"太力","score":null},{"name":"上海成事好物","score":null}],"industries":[]},{"name":"蓝橘传媒","client_cnt":3,"clients":[{"name":"宝家洁","score":null},{"name":"梦创","score":null},{"name":"好太太","score":null}],"industries":[]},{"name":"上海亦芯","client_cnt":2,"clients":[{"name":"上海成事好物","score":null},{"name":"友望","score":null}],"industries":[]},{"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null}],"industries":[]},{"name":"广州晨曦","client_cnt":1,"clients":[{"name":"友望","score":null}],"industries":[]}];
-const STAGES=["total","qingliang","yangsheng","huanxin"];
-const STAGE_LABEL={total:"总榜",qingliang:"清凉节",yangsheng:"养生节",huanxin:"焕新节"};
+const STAGES=["total","w1","w2","w3"];
+const STAGE_LABEL={total:"总榜",w1:"第 1 周",w2:"第 2 周",w3:"第 3 周"};
 // 客户榜积分（人货场维度累加分）— 每天从 http://1.14.143.207/peipei-mhshj/ 同步一次
 // 结构：{ 代理商名: { total_score: 总积分, clients: [{name, score, breakdown}], synced_at } }
 // 7/20 客户榜开赛前保持空对象，评分自动为 0
@@ -437,24 +415,11 @@ function renderRank(){
       <div style="text-align:right"><button class="exp-btn" onclick="event.stopPropagation();toggleDrawer(${i})">展开</button></div>
     </div>
     <div class="drawer" id="drawer-${i}">
-      <div class="drawer-inner">
-        <div>
-          <h4>综合分构成</h4>
-          <div class="radar" id="radar-${i}"></div>
-          <h4 style="margin-top:6px"><span>分项详情</span><a class="link" onclick="shotOneAgent(${i})">📸 生成截图</a></h4>
-          <div style="font-size:11px;color:#5c6a8c;line-height:1.7;background:#fff;border-radius:6px;padding:8px">
-            <div style="font-weight:600;color:#4d7cff;margin-bottom:2px">客户分 70 · <b>${a.p}</b>${a.hasClientScore?` <span style="color:#3b7a1f;font-size:9px">✓ 客户榜</span>`:' <span style="color:#a0abc4;font-size:9px">(客户榜 7/20 开赛)</span>'}</div>
-            ${a.hasClientScore?`<div style="padding-left:8px;font-size:10px;color:#93a0bd">└ 名下客户平均分 ${a.p_client_avg}/100 · 覆盖客户 ${a.client_cnt} 家</div>`:`<div style="padding-left:8px;font-size:10px;color:#93a0bd">└ 覆盖客户 ${a.client_cnt} 家 · 等客户榜数据</div>`}
-            <div style="margin-top:4px;font-weight:600;color:#4d7cff">代理协同 30 · <b>${a.v}</b>${a.hasRealValue?"":' <span style="color:#a0abc4;font-size:9px">(比赛结束后上传)</span>'}</div>
-            <div style="padding-left:8px;font-size:10px;color:#93a0bd">├ 带动客户报名数：<b style="color:#5c6a8c">${a.v_signup}/10</b></div>
-            <div style="padding-left:8px;font-size:10px;color:#93a0bd">├ 新客拓展数：<b style="color:#5c6a8c">${a.v_newclient}/10</b></div>
-            <div style="padding-left:8px;font-size:10px;color:#93a0bd">└ 比赛配合度：<b style="color:#5c6a8c">${a.v_manager}/10</b></div>
-          </div>
-        </div>
+      <div class="drawer-inner" style="grid-template-columns:1fr">
         <div>
           <h4>
-            <span>名下客户结果指标 · ${a.client_cnt} 家</span>
-            <a class="link" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">运营指标看板 ↗</a>
+            <span>名下客户 · ${a.client_cnt} 家 &nbsp;<span style="color:#93a0bd;font-weight:400;font-size:10px">（客户分 ${a.p}/70 · 协同 ${a.v}/30 · 综合 ${a.total}）</span></span>
+            <a class="link" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">客户榜 ↗</a>
           </h4>
           <div class="ct">${clientTableHtml(a)}</div>
         </div>
@@ -467,20 +432,34 @@ function clientTableHtml(a){
   if(cs.length===0)return '<div style="padding:20px;text-align:center;color:#a0abc4;font-size:11px">暂无客户数据</div>';
   const scores=cs.map(c=>c.score).filter(s=>s!=null&&s>=0);
   const avg=scores.length?(scores.reduce((s,x)=>s+x,0)/scores.length).toFixed(1):"—";
+  const cell=v=>v!=null&&v>=0?`<span style="color:#4d7cff;font-weight:600">${v}</span>`:'<span style="color:#a0abc4">—</span>';
   return `<table>
-    <thead><tr><th style="text-align:left">客户</th><th>客户榜分数</th><th>状态</th><th>详情</th></tr></thead>
+    <thead>
+      <tr>
+        <th style="text-align:left" rowspan="2">客户</th>
+        <th rowspan="2">客户榜<br/>综合分</th>
+        <th colspan="3" style="border-bottom:1px solid #e5eaf5">状态（人 / 货 / 场）</th>
+        <th rowspan="2">详情</th>
+      </tr>
+      <tr>
+        <th style="font-size:10px">人</th>
+        <th style="font-size:10px">货</th>
+        <th style="font-size:10px">场</th>
+      </tr>
+    </thead>
     <tbody>${cs.map(c=>{
       const has=c.score!=null&&c.score>=0;
       const scoreStr=has?c.score.toFixed(1):"—";
-      const badge=has?'<span style="color:#3b7a1f;background:#e5f7f0;padding:1px 6px;border-radius:4px;font-size:10px">✓ 已同步</span>':'<span style="color:#a0abc4;background:#f4f6fc;padding:1px 6px;border-radius:4px;font-size:10px">等 7/20</span>';
       return `<tr>
         <td class="cust">${c.name}</td>
         <td style="font-weight:${has?'700':'400'};color:${has?'#4d7cff':'#a0abc4'};font-size:${has?'13px':'11px'}">${scoreStr}</td>
-        <td>${badge}</td>
+        <td>${cell(c.people)}</td>
+        <td>${cell(c.goods)}</td>
+        <td>${cell(c.venue)}</td>
         <td><a class="link-out" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">看板↗</a></td>
       </tr>`;
     }).join("")}
-    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td colspan="2" style="text-align:left;color:#93a0bd;font-size:10px">共 ${cs.length} 家客户，参与均分计算</td></tr>
+    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td colspan="4" style="text-align:left;color:#93a0bd;font-size:10px">共 ${cs.length} 家客户，参与均分计算</td></tr>
     </tbody></table>`;
 }
 let openIdx=-1;
@@ -489,47 +468,12 @@ function toggleDrawer(i){
   if(openIdx===i){d.classList.remove("open");openIdx=-1;return}
   if(openIdx>=0)document.getElementById("drawer-"+openIdx).classList.remove("open");
   d.classList.add("open");openIdx=i;
-  setTimeout(()=>{drawRadar(i)},50);
-}
-function drawRadar(i){
-  const el=document.getElementById("radar-"+i);
-  if(!el||el.dataset.done)return;
-  const a=AGENTS[i];
-  const ch=echarts.init(el);
-  ch.setOption({
-    grid:{left:60,right:30,top:15,bottom:20},
-    xAxis:{type:"value",max:70,axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:"#eef2fc"}},axisLabel:{color:"#a0abc4",fontSize:9}},
-    yAxis:{type:"category",data:["代理协同/30","客户分/70"],axisLine:{show:false},axisTick:{show:false},axisLabel:{color:"#5c6a8c",fontSize:10}},
-    series:[{type:"bar",data:[{value:a.v,itemStyle:{color:"#00c6a7"}},{value:a.p,itemStyle:{color:"#4d7cff"}}],barWidth:14,label:{show:true,position:"right",color:"#2d3552",fontSize:10,fontWeight:600,formatter:params=>params.value.toFixed(1)}}]
-  });
-  el.dataset.done=1;
 }
 function switchStage(el){document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");currentStage=el.dataset.stage;openIdx=-1;refresh()}
-function switchPolicy(el,type){document.querySelectorAll(".p-tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");document.getElementById("policyAgent").style.display=type==="agent"?"grid":"none";document.getElementById("policyClient").style.display=type==="client"?"block":"none";if(type==="client")renderClientPolicy()}
-function fillTopPolicies(){
-  const valid=AGENTS.filter(a=>!a.disabled);
-  const t1=valid[0],t2=valid[1],t3=valid[2];
-  if(t1){document.getElementById("top1Name").textContent="当前 Top1："+t1.name;document.getElementById("top1Score").textContent="综合分 "+t1.total}
-  if(t2){document.getElementById("darkName").textContent="当前 Top2："+t2.name;document.getElementById("darkChg").textContent="综合分 "+t2.total}
-  if(t3){document.getElementById("baseName").textContent="当前 Top3："+t3.name;document.getElementById("baseScore").textContent="综合分 "+t3.total}
-}
-function renderAgentSelect(){
-  const sel=document.getElementById("agentSel");
-  sel.innerHTML=AGENTS.filter(a=>!a.disabled).slice(0,10).map((a,i)=>`<option value="${AGENTS.indexOf(a)}">${a.name}（${a.client_cnt} 家）</option>`).join("");
-}
-const CLIENT_POLICY=[];
-function renderClientPolicy(){
-  const idx=+document.getElementById("agentSel").value;
-  const a=AGENTS[idx];if(!a)return;
-  const clientNames=new Set(a.clients.map(c=>c.name));
-  const matched=CLIENT_POLICY.filter(p=>[...clientNames].some(cn=>p.match(cn)));
-  const html=matched.map((p,i)=>{
-    const hits=[...clientNames].filter(cn=>p.match(cn));
-    const progress=[35,68,54,72,41,58][i%6];
-    return `<div class="p-card"><span class="p-tag">${p.tag}</span><h5>${p.name}</h5><div class="p-match">✓ 匹配 ${a.name} 名下 ${hits.length} 家客户${hits.length<=2?"：<b>"+hits.map(h=>h.length>8?h.slice(0,8)+"…":h).join("、")+"</b>":""}</div><div class="p-desc">${p.desc}</div><div class="p-bar"><div style="width:${progress}%"></div></div><div class="p-foot"><span>当前进度</span><span>${progress}%</span></div></div>`
-  }).join("");
-  document.getElementById("clientPolicyGrid").innerHTML=html||'<div style="grid-column:1/-1;padding:30px;text-align:center;color:#a0abc4;font-size:12px">📋 客户侧政策待录入<br/><span style="font-size:10px;color:#c8d0e0">由运营/渠道经理确认后统一维护</span></div>';
-}
+function switchPolicy(){/* removed */}
+function fillTopPolicies(){/* removed - 政策墙已删除 */}
+function renderAgentSelect(){/* removed */}
+function renderClientPolicy(){/* removed */}
 
 /* ============ 管理登录 ============ */
 function clickAdmin(){
@@ -554,8 +498,8 @@ function openModal(id){document.getElementById(id).classList.add("open")}
 function closeModal(id){document.getElementById(id).classList.remove("open")}
 
 function renderSlots(){
-  const STAGE_TITLE={total:"🏅 总榜",qingliang:"❄️ 清凉节",yangsheng:"🌿 养生节",huanxin:"✨ 焕新节"};
-  const STAGE_SUB={total:"全周期数据",qingliang:"7/20-7/25",yangsheng:"7/25-8/7",huanxin:"8/8-8/20"};
+  const STAGE_TITLE={total:"🏅 总榜",w1:"🚀 第 1 周",w2:"🚀 第 2 周",w3:"🚀 第 3 周"};
+  const STAGE_SUB={total:"全周期数据",w1:"7/20-7/26",w2:"7/27-8/2",w3:"8/3-8/9"};
   document.getElementById("resultSlots").innerHTML=STAGES.map(s=>slotHtml(s,"result",STAGE_TITLE[s],STAGE_SUB[s])).join("");
   document.getElementById("valueSlots").innerHTML=STAGES.map(s=>slotHtml(s,"value",STAGE_TITLE[s],STAGE_SUB[s])).join("");
   STAGES.forEach(s=>["result","value"].forEach(k=>updateSlotStatus(s,k)));
@@ -716,24 +660,80 @@ async function shotOneAgent(i){
   }catch(err){alert("截图失败："+err.message)}
   setTimeout(()=>{holder.innerHTML=""},1000);
 }
-async function shotEachAgent(){
-  if(!confirm(`将为「${STAGE_LABEL[currentStage]}」榜上 ${AGENTS.length} 家代理逐一生成截图并批量下载，确定继续？`))return;
-  for(let i=0;i<AGENTS.length;i++){await shotOneAgent(i);await new Promise(r=>setTimeout(r,800))}
+async function shotEachAgent(){/* deprecated: 用 shotLongImg 代替 */
+  return shotLongImg();
 }
-async function shotFullDashboard(){
+async function shotLongImg(){
+  // 展开所有代理商 → 截整个容器为长图 → 恢复原状
+  const wasOpen=openIdx;
+  const drawers=document.querySelectorAll(".drawer");
+  drawers.forEach(d=>d.classList.add("open"));
+  await new Promise(r=>setTimeout(r,400));
   const target=document.querySelector(".container");
   try{
-    const canvas=await html2canvas(target,{backgroundColor:null,scale:1.5,useCORS:true,windowWidth:target.scrollWidth,windowHeight:target.scrollHeight});
+    const canvas=await html2canvas(target,{backgroundColor:"#5b7fe8",scale:1.5,useCORS:true,windowWidth:target.scrollWidth,windowHeight:target.scrollHeight});
     canvas.toBlob(blob=>{
       const url=URL.createObjectURL(blob);
-      const dl=document.createElement("a");dl.href=url;dl.download=`代理商打榜_${STAGE_LABEL[currentStage]}_${new Date().toISOString().slice(0,10)}.png`;dl.click();
+      const dl=document.createElement("a");dl.href=url;dl.download=`代理商打榜排行长图_${STAGE_LABEL[currentStage]}_${new Date().toISOString().slice(0,10)}.png`;dl.click();
       URL.revokeObjectURL(url);
     });
-  }catch(err){alert("截图失败："+err.message)}
+  }catch(err){alert("生成长图失败："+err.message)}
+  // 恢复展开状态
+  drawers.forEach(d=>d.classList.remove("open"));
+  if(wasOpen>=0){document.getElementById("drawer-"+wasOpen)?.classList.add("open");openIdx=wasOpen}else{openIdx=-1}
+}
+async function shotFullDashboard(){return shotLongImg()}
+
+/* ============ 倒计时 + 时间轴动态渲染 ============ */
+const CONTEST_STAGES=[
+  {key:"w1", label:"第 1 周", start:"2026-07-20", end:"2026-07-26"},
+  {key:"w2", label:"第 2 周", start:"2026-07-27", end:"2026-08-02"},
+  {key:"w3", label:"第 3 周", start:"2026-08-03", end:"2026-08-09"},
+];
+function fmtMD(d){return `${d.getMonth()+1}/${d.getDate()}`}
+function renderTimeline(){
+  const now=new Date();
+  const box=document.getElementById("timelineBox");
+  if(!box)return;
+  box.innerHTML=CONTEST_STAGES.map(s=>{
+    const st=new Date(s.start+"T00:00:00");
+    const ed=new Date(s.end+"T23:59:59");
+    let cls="";
+    if(now>ed)cls="done";
+    else if(now>=st)cls="now";
+    return `<div class="tl-node ${cls}"><div class="dot"></div><div class="name">🚀 ${s.label}</div><div class="date">${fmtMD(st)} - ${fmtMD(ed)}</div></div>`;
+  }).join("");
+}
+function renderCountdown(){
+  const bar=document.getElementById("countdownBar");
+  if(!bar)return;
+  const now=new Date();
+  const contestStart=new Date("2026-07-20T00:00:00");
+  const contestEnd=new Date("2026-08-20T23:59:59");
+  let target,label;
+  if(now<contestStart){target=contestStart;label="距开赛"}
+  else if(now<=contestEnd){target=contestEnd;label="距收官"}
+  else{
+    bar.innerHTML=`<div class="countdown-item"><div class="num">已收官</div><div class="unit">2026.8.20</div></div>`;
+    return;
+  }
+  const diff=Math.max(0,target-now);
+  const days=Math.floor(diff/86400000);
+  const hours=Math.floor((diff%86400000)/3600000);
+  const mins=Math.floor((diff%3600000)/60000);
+  bar.innerHTML=`
+    <div class="countdown-item"><div class="num">${days}</div><div class="unit">天</div></div>
+    <div class="countdown-item"><div class="num">${String(hours).padStart(2,"0")}</div><div class="unit">时</div></div>
+    <div class="countdown-item"><div class="num">${String(mins).padStart(2,"0")}</div><div class="unit">分</div></div>
+    <div class="countdown-item"><div class="num" style="font-size:12px;line-height:26px">${label}</div><div class="unit">${target.getMonth()+1}/${target.getDate()}</div></div>`;
 }
 
 /* init */
 refresh();
+renderTimeline();
+renderCountdown();
+setInterval(renderCountdown,60000); // 每分钟刷新倒计时
+setInterval(renderTimeline,3600000); // 每小时重算高亮周
 if(isAdmin){document.getElementById("adminBtn").classList.add("on");document.getElementById("adminBtn").textContent="🔓 管理中"}
 </script>
 </body>
