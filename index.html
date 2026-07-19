@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>鹅选美好生活月 · 代理商打榜赛</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#4d7cff;--primary-light:#8ba3ff;--accent:#00c6a7;--accent-2:#7ee0d3;
+  --gold:#ffcf5c;--silver:#c0d3e8;--bronze:#f9b48c;
+  --bg-gradient:linear-gradient(160deg,#3b5cd6 0%,#5b7fe8 25%,#7fb4e6 55%,#a5e6d8 100%);
+  --card-shadow:0 4px 16px rgba(30,50,120,0.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB",sans-serif;background:var(--bg-gradient);min-height:100vh;padding:16px;color:#2d3552}
+.container{max-width:840px;margin:0 auto}
+.header{text-align:center;padding:28px 20px 24px;color:#fff;position:relative}
+.header h1{font-size:26px;font-weight:800;margin-bottom:6px;text-shadow:0 2px 8px rgba(20,30,80,.25);letter-spacing:1px}
+.header .subtitle{font-size:13px;opacity:.92}
+.header .top-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.header .top-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.9);padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px);text-decoration:none;font-family:inherit;display:inline-flex;align-items:center;gap:4px}
+.header .top-btn.on{background:rgba(0,198,167,.35);border-color:rgba(126,224,211,.6)}
+.header .top-btn:hover{background:rgba(255,255,255,.28)}
+.countdown-bar{margin-top:16px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.countdown-item{background:rgba(255,255,255,.18);backdrop-filter:blur(10px);border-radius:10px;padding:10px 16px;text-align:center;min-width:70px;color:#fff}
+.countdown-item .num{font-size:22px;font-weight:800}
+.countdown-item .unit{font-size:11px;opacity:.85}
+.section{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--card-shadow)}
+.section h3{font-size:15px;color:#2d3552;margin-bottom:14px;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.section h3 .left{display:flex;align-items:center;gap:6px}
+.section h3 .left::before{content:"";width:4px;height:14px;background:var(--primary);border-radius:2px}
+.section h3 .sub{font-size:11px;color:#93a0bd;font-weight:400}
+.section h3 .actions{display:flex;gap:6px}
+.mini-btn{background:#eef2fc;color:var(--primary);border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit}
+.mini-btn:hover{background:#dde4f8}
+.mini-btn.primary{background:var(--primary);color:#fff}
+.mini-btn.accent{background:var(--accent);color:#fff}
+.timeline{display:flex;gap:0;position:relative}
+.timeline::before{content:"";position:absolute;top:22px;left:24px;right:24px;height:3px;background:#e8ecf5;border-radius:2px;z-index:0}
+.tl-node{flex:1;text-align:center;position:relative;z-index:1}
+.tl-node .dot{width:12px;height:12px;border-radius:50%;background:#d5dae8;margin:16px auto 8px;border:3px solid #fff;box-shadow:0 0 0 1px #d5dae8}
+.tl-node.now .dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 0 5px rgba(0,198,167,.2)}
+.tl-node.done .dot{background:var(--primary)}
+.tl-node .name{font-size:11px;color:#6b7898;font-weight:600}
+.tl-node.now .name{color:var(--accent)}
+.tl-node .date{font-size:10px;color:#a0abc4;margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:12px;padding:16px 10px;text-align:center;box-shadow:var(--card-shadow);position:relative;overflow:hidden}
+.stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--primary)}
+.stat-card.teal::before{background:var(--accent)}
+.stat-card.purple::before{background:#8f6fdc}
+.stat-card.amber::before{background:#f5a623}
+.stat-card .num{font-size:24px;font-weight:800;color:var(--primary)}
+.stat-card .num small{font-size:12px;font-weight:400;color:#a0abc4;margin-left:2px}
+.stat-card.teal .num{color:var(--accent)}
+.stat-card.purple .num{color:#8f6fdc}
+.stat-card.amber .num{color:#f5a623}
+.stat-card .label{font-size:11px;color:#93a0bd;margin-top:2px}
+.rule-banner{background:linear-gradient(90deg,#4d7cff 0%,#7061e0 50%,#00c6a7 100%);color:#fff;border-radius:12px;padding:12px 16px;font-size:12px;text-align:center;margin-bottom:16px;line-height:1.5;box-shadow:var(--card-shadow)}
+.rule-banner b{font-weight:700}
+.tabs{background:#fff;border-radius:12px;padding:4px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:12px;box-shadow:var(--card-shadow)}
+.tab{padding:10px 8px;border-radius:8px;font-size:13px;text-align:center;color:#6b7898;cursor:pointer;transition:all .2s;position:relative}
+.tab.active{background:linear-gradient(90deg,#4d7cff,#00c6a7);color:#fff;font-weight:600}
+.rank-head{display:grid;grid-template-columns:40px 1.4fr 60px 60px 54px 60px 60px 46px;gap:6px;padding:8px 12px;font-size:11px;color:#93a0bd;background:#f4f6fc;border-radius:8px;margin-bottom:6px;align-items:center}
+.rank-row{display:grid;grid-template-columns:40px 1.4fr 60px 60px 54px 60px 60px 46px;gap:6px;padding:11px 12px;font-size:13px;align-items:center;border-radius:10px;cursor:pointer;transition:all .2s;background:#fff;border:.5px solid transparent}
+.rank-row:hover{background:#f4f6fc}
+.rank-row.top1{background:linear-gradient(90deg,#fff5db 0%,#fffbea 100%);border-color:#ffcf5c}
+.rank-row.top2{background:linear-gradient(90deg,#eef3fa 0%,#f7faff 100%);border-color:#c0d3e8}
+.rank-row.top3{background:linear-gradient(90deg,#feede0 0%,#fef7f0 100%);border-color:#f9b48c}
+.rank-row.disabled{opacity:.55}
+.rk{text-align:center;font-weight:800;color:#93a0bd;font-size:15px}
+.rk.m1{color:#e5a419;font-size:18px}
+.rk.m2{color:#7b8ca8;font-size:18px}
+.rk.m3{color:#dd8654;font-size:18px}
+.agent-cell{display:flex;align-items:center;gap:8px;min-width:0}
+.agent-logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4d7cff,#00c6a7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.agent-name{font-size:13px;font-weight:600;color:#2d3552;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agent-sub{font-size:10px;color:#a0abc4;margin-top:2px}
+.total-cell{text-align:center;font-size:17px;font-weight:800;color:var(--primary)}
+.sub-cell{text-align:center;font-size:12px;color:#5c6a8c}
+.sub-cell .u{font-size:9px;color:#a0abc4;margin-left:1px}
+.trend{text-align:center;font-size:12px;font-weight:700}
+.trend.up{color:#d14343}
+.trend.down{color:#3b7a1f}
+.trend.flat{color:#a0abc4}
+.exp-btn{background:#eef2fc;color:var(--primary);border:none;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;font-weight:600}
+.warn-tag{font-size:10px;color:#d14343;background:#fdecec;padding:1px 6px;border-radius:4px;margin-left:4px}
+.ok-tag{font-size:10px;color:#3b7a1f;background:#e5f7f0;padding:1px 6px;border-radius:4px;margin-left:4px}
+.drawer{grid-column:1/-1;overflow:hidden;max-height:0;transition:max-height .35s ease}
+.drawer.open{max-height:1600px}
+.drawer-inner{background:#f4f6fc;border-radius:10px;padding:14px;margin-top:8px;display:grid;grid-template-columns:200px 1fr;gap:14px}
+.drawer h4{font-size:12px;color:#6b7898;margin-bottom:8px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.drawer h4 .link{font-size:10px;color:var(--primary);text-decoration:none;font-weight:500;cursor:pointer}
+.radar{height:180px}
+.ct{background:#fff;border-radius:8px;padding:10px;overflow-x:auto}
+.ct table{border-collapse:collapse;width:100%;font-size:11px}
+.ct th,.ct td{padding:6px 4px;text-align:center;border-bottom:.5px solid #f0f2f8}
+.ct th{color:#93a0bd;font-weight:600;background:#fafbfe}
+.ct td.cust{text-align:left;font-weight:600;color:#2d3552;font-size:11px}
+.ct .chg-up{color:#d14343;font-weight:600}
+.ct .chg-down{color:#3b7a1f;font-weight:600}
+.ct .chg-flat{color:#a0abc4}
+.ct .chg-inf{color:#4d7cff;font-weight:600}
+.ct .link-out{font-size:10px;color:var(--primary);text-decoration:none;background:#eef2fc;padding:2px 6px;border-radius:4px;cursor:pointer}
+.p-tabs{display:flex;gap:8px;margin-bottom:12px}
+.p-tab{padding:6px 14px;font-size:12px;color:#6b7898;background:#f4f6fc;border-radius:14px;cursor:pointer;font-weight:600}
+.p-tab.active{background:linear-gradient(90deg,#4d7cff,#00c6a7);color:#fff}
+.p-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.p-card{background:#f4f6fc;border-radius:10px;padding:12px;border:.5px solid #e5eaf5}
+.p-card.gold{background:linear-gradient(135deg,#fff5db 0%,#fffbea 100%);border-color:#ffcf5c}
+.p-card .p-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:8px;background:#e5edff;color:var(--primary);margin-bottom:6px;font-weight:600}
+.p-card.gold .p-tag{background:#ffcf5c;color:#7a5b0a}
+.p-card h5{font-size:13px;font-weight:700;margin-bottom:4px;color:#2d3552}
+.p-card .p-desc{font-size:11px;color:#6b7898;line-height:1.5;margin-bottom:8px}
+.p-card .p-match{font-size:10px;color:var(--primary);margin-bottom:6px;background:rgba(77,124,255,.08);padding:3px 6px;border-radius:4px;display:inline-block}
+.p-card .p-bar{height:5px;background:#e5eaf5;border-radius:3px;overflow:hidden;margin-bottom:4px}
+.p-card .p-bar>div{height:100%;background:linear-gradient(90deg,#4d7cff,#00c6a7)}
+.p-card .p-foot{display:flex;justify-content:space-between;font-size:10px;color:#93a0bd}
+.agent-picker{background:#eef2fc;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#5c6a8c;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.agent-picker select{border:.5px solid #c8d0e0;background:#fff;border-radius:6px;padding:4px 8px;font-size:12px;color:#2d3552}
+.data-source{background:#eafaf5;border-left:3px solid var(--accent);border-radius:6px;padding:8px 12px;font-size:11px;color:#0a7d68;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.data-source a{color:var(--primary);text-decoration:none;font-weight:600;cursor:pointer}
+.footer-note{text-align:center;color:rgba(255,255,255,.85);font-size:11px;padding:12px 0}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(20,30,60,.6);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:14px;padding:24px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;color:#2d3552;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;font-size:20px;color:#93a0bd;cursor:pointer;line-height:1}
+.modal-desc{font-size:12px;color:#6b7898;line-height:1.6;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:#6b7898;margin-bottom:4px;font-weight:600}
+.field input{width:100%;padding:8px 12px;border:.5px solid #c8d0e0;border-radius:8px;font-size:13px;background:#fff;color:#2d3552;font-family:inherit}
+.field input:focus{outline:none;border-color:var(--primary)}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.btn{padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.ghost{background:#f4f6fc;color:#6b7898}
+.err-msg{color:#d14343;font-size:11px;margin-top:6px}
+.admin-panel{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:100;background:#fff;border-radius:14px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.2);width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 120px);overflow-y:auto;display:none}
+.admin-panel.open{display:block}
+.admin-panel h4{font-size:14px;font-weight:700;color:#2d3552;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.admin-panel .close-btn{background:#f4f6fc;color:#6b7898;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer}
+.slot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.slot{background:#f4f6fc;border-radius:10px;padding:12px;border:.5px dashed #c8d0e0;transition:all .2s}
+.slot.loaded{background:#eafaf5;border:.5px solid var(--accent);border-style:solid}
+.slot .st{font-size:12px;font-weight:700;color:#2d3552;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.slot .sub{font-size:10px;color:#93a0bd;margin-bottom:8px}
+.slot .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.slot label.file-input{background:#fff;color:var(--primary);border:.5px solid var(--primary);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;display:inline-block}
+.slot label.file-input input{display:none}
+.slot .clear-btn{background:#fdecec;color:#d14343;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600}
+.slot .status-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:#eef2fc;color:var(--primary)}
+.slot.loaded .status-tag{background:var(--accent);color:#fff}
+.tpl-box{background:#fff5e6;border-radius:10px;padding:12px;margin-bottom:12px;font-size:11px;color:#8b5a0a;line-height:1.6}
+.tpl-box b{color:#663d06}
+.tpl-box a{color:var(--primary);cursor:pointer;text-decoration:none;font-weight:600}
+.shot-card{background:#fff;border-radius:16px;padding:24px;width:640px;font-family:-apple-system,"PingFang SC",sans-serif}
+.shot-card .sh-hdr{background:linear-gradient(135deg,#4d7cff,#00c6a7);border-radius:12px;padding:24px;color:#fff;margin-bottom:16px;text-align:center}
+.shot-card .sh-hdr h2{font-size:22px;font-weight:800;margin-bottom:4px}
+.shot-card .sh-hdr .stg{font-size:12px;opacity:.9}
+.shot-card .rank-highlight{display:flex;justify-content:space-around;background:#f4f6fc;border-radius:12px;padding:16px;margin-bottom:14px;text-align:center}
+.shot-card .rank-highlight .item{flex:1}
+.shot-card .rank-highlight .k{font-size:22px;font-weight:800;color:#4d7cff}
+.shot-card .rank-highlight .k.big{font-size:36px;color:#00c6a7}
+.shot-card .rank-highlight .v{font-size:11px;color:#93a0bd;margin-top:2px}
+.shot-card h6{font-size:13px;font-weight:700;color:#2d3552;margin:12px 0 8px}
+.shot-card table{width:100%;border-collapse:collapse;font-size:11px;background:#fff;border-radius:8px;overflow:hidden;border:.5px solid #f0f2f8}
+.shot-card th,.shot-card td{padding:8px 6px;border-bottom:.5px solid #f0f2f8;text-align:center}
+.shot-card th{background:#fafbfe;color:#93a0bd;font-weight:600}
+.shot-card td.cust{text-align:left;font-weight:600;color:#2d3552}
+.shot-card .footer{margin-top:14px;font-size:10px;color:#a0abc4;text-align:center}
+.hidden-shot{position:fixed;left:-9999px;top:0}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🚀 鹅选美好生活月 · 代理商打榜赛</h1>
+    <div class="subtitle">腾讯营销 · 消电日百 &nbsp;|&nbsp; 2026.7.20 → 8.20 &nbsp;|&nbsp; 代理商榜</div>
+    <div class="top-actions">
+      <button class="top-btn" onclick="shotFullDashboard()">📸 一键截图</button>
+      <a class="top-btn" href="http://1.14.143.207/peipei-mhshj/" target="_blank">↗ 客户榜</a>
+      <button class="top-btn" id="adminBtn" onclick="clickAdmin()">🔒 管理</button>
+    </div>
+    <div class="countdown-bar">
+      <div class="countdown-item"><div class="num">4</div><div class="unit">天</div></div>
+      <div class="countdown-item"><div class="num">05</div><div class="unit">时</div></div>
+      <div class="countdown-item"><div class="num">开赛倒计时</div><div class="unit">距清凉节</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <h3><span class="left">作战节奏 · 4 大节点</span></h3>
+    <div class="timeline">
+      <div class="tl-node now"><div class="dot"></div><div class="name">❄️ 清凉美好节</div><div class="date">7/20 - 7/25</div></div>
+      <div class="tl-node"><div class="dot"></div><div class="name">🌿 养生美好节</div><div class="date">7/25 - 8/7</div></div>
+      <div class="tl-node"><div class="dot"></div><div class="name">✨ 焕新美好节</div><div class="date">8/8 - 8/20</div></div>
+      <div class="tl-node"><div class="dot"></div><div class="name">🏆 收官盛典</div><div class="date">8/18 - 8/20</div></div>
+    </div>
+  </div>
+  <div class="stats" id="kpiRow"></div>
+  <div class="tabs" id="stageTabs">
+    <div class="tab active" data-stage="total" onclick="switchStage(this)">🏅 总榜</div>
+    <div class="tab" data-stage="qingliang" onclick="switchStage(this)">❄️ 清凉节</div>
+    <div class="tab" data-stage="yangsheng" onclick="switchStage(this)">🌿 养生节</div>
+    <div class="tab" data-stage="huanxin" onclick="switchStage(this)">✨ 焕新节</div>
+  </div>
+  <div class="section">
+    <h3>
+      <span class="left">代理商实时排行榜 <span class="sub" id="stageLabel">· 总榜</span></span>
+      <span class="actions"><button class="mini-btn" onclick="shotEachAgent()">📸 逐家生成截图</button></span>
+    </h3>
+    <div class="data-source" id="dataSourceTip">
+      <span>📊 <b>客户分 70</b>：<span style="color:#a0abc4">待客户榜开赛（7/20）</span> · <b>代理协同 30</b>：<span id="mockStatus">比赛结束后统一上传</span></span>
+      <a onclick="window.open('http://1.14.143.207/peipei-mhshj/','_blank')">查看客户运营指标看板 ↗</a>
+    </div>
+    <div class="rank-head">
+      <div style="text-align:center">名次</div><div>代理商</div>
+      <div style="text-align:center">综合分</div>
+      <div style="text-align:center">客户分</div>
+      <div style="text-align:center">协同分</div>
+      <div style="text-align:center">客户平均</div>
+      <div style="text-align:center">名下客户</div><div></div>
+    </div>
+    <div id="rankList"></div>
+  </div>
+  <div class="section">
+    <h3><span class="left">激励政策墙</span></h3>
+    <div class="p-tabs">
+      <div class="p-tab active" onclick="switchPolicy(this,'agent')">🎖️ 代理侧政策</div>
+      <div class="p-tab" onclick="switchPolicy(this,'client')">🎁 客户侧政策</div>
+    </div>
+    <div id="policyAgent" class="p-grid">
+      <div class="p-card gold"><span class="p-tag">卓越成长伙伴</span><h5>🥇 卓越成长伙伴 · 金奖</h5><div class="p-desc">荣誉证书 + 官方案例包装</div><div class="p-bar"><div style="width:68%"></div></div><div class="p-foot"><span id="top1Name">当前 Top1：—</span><span id="top1Score">综合分 —</span></div></div>
+      <div class="p-card gold"><span class="p-tag">卓越成长伙伴</span><h5>🥈 卓越成长伙伴 · 银奖</h5><div class="p-desc">荣誉证书 + 官方案例包装</div><div class="p-bar"><div style="width:54%"></div></div><div class="p-foot"><span id="darkName">当前 Top2：—</span><span id="darkChg">综合分 —</span></div></div>
+      <div class="p-card gold"><span class="p-tag">卓越成长伙伴</span><h5>🥉 卓越成长伙伴 · 铜奖</h5><div class="p-desc">荣誉证书 + 官方案例包装</div><div class="p-bar"><div style="width:82%"></div></div><div class="p-foot"><span id="baseName">当前 Top3：—</span><span id="baseScore">综合分 —</span></div></div>
+      <div class="p-card"><span class="p-tag">说明</span><h5>📋 评奖规则</h5><div class="p-desc">按综合分排名评选前 3 名代理商，均颁发「卓越成长伙伴」（金/银/铜），奖励为荣誉证书 + 官方案例包装。</div><div class="p-bar"><div style="width:100%;background:#c8d0e0"></div></div><div class="p-foot"><span>奖项状态</span><span style="color:#3b7a1f">已确认</span></div></div>
+    </div>
+    <div id="policyClient" style="display:none">
+      <div class="agent-picker"><span>选择代理商：</span><select id="agentSel" onchange="renderClientPolicy()"></select><span style="color:#a0abc4">系统按名下客户自动匹配</span></div>
+      <div id="clientPolicyGrid" class="p-grid"></div>
+    </div>
+  </div>
+  <div class="rule-banner" style="margin-top:8px">📊 <b>综合分 100</b> = 客户分 70（名下客户在客户榜的平均分）+ 代理协同分 30（带动客户报名数 10 + 新客拓展数 10 + 比赛配合度 10）</div>
+  <div class="footer-note">数据 T+1 更新 · 数据源：通用分析数据集 + 上传数据 · © 腾讯营销</div>
+</div>
+<div class="modal" id="loginModal">
+  <div class="modal-box">
+    <div class="modal-title">🔒 管理员登录 <button class="modal-close" onclick="closeModal('loginModal')">×</button></div>
+    <div class="modal-desc">仅管理员可上传数据、切换榜单数据源。</div>
+    <div class="field">
+      <label>密码</label>
+      <input type="password" id="pwdInput" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div class="err-msg" id="pwdErr" style="display:none">密码错误</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="closeModal('loginModal')">取消</button>
+      <button class="btn primary" onclick="doLogin()">登录</button>
+    </div>
+  </div>
+</div>
+<div class="admin-panel" id="adminPanel">
+  <h4>🛠 管理面板 <button class="close-btn" onclick="closeAdminPanel()">收起</button></h4>
+  <div class="tpl-box">
+    <b>数据上传说明：</b>4 个榜（总榜/清凉/养生/焕新）各一个独立数据槽，上传后当前榜单实时刷新。<br/>
+    <b>① 客户分 70</b>：从<a onclick="window.open('http://1.14.143.207/peipei-mhshj/','_blank')" style="cursor:pointer">客户榜↗</a>抓取名下客户平均分（每天 13:00 自动同步）<br/>
+    <b>② 代理协同 30</b>：<a onclick="downloadValueTpl()">📥 下载模板</a> 填 3 列各 0-100 分（带动客户报名数、新客拓展数、比赛配合度），<b>比赛结束后</b>统一上传<br/>
+    数据都存在浏览器本地（localStorage），换机器需重新上传
+  </div>
+  <div style="font-size:12px;font-weight:700;color:#2d3552;margin-bottom:8px">① 结果指标（可选 · 已废弃）</div>
+  <div class="slot-grid" id="resultSlots"></div>
+  <div style="font-size:12px;font-weight:700;color:#2d3552;margin:14px 0 8px">② 代理协同（3 项各 10 分，比赛结束后上传）</div>
+  <div class="slot-grid" id="valueSlots"></div>
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="mini-btn" onclick="downloadValueTpl()">📥 下载模板</button>
+    <button class="mini-btn" onclick="exportAll()">📦 导出全部数据</button>
+    <button class="mini-btn accent" onclick="doLogout()">🚪 退出管理</button>
+  </div>
+</div>
+<div class="hidden-shot" id="shotHolder"></div>
+<script>
+const CLIENT_DASH_PROCESS={"开域国际":{"room_count":5,"spend_total":312.77,"achievement_rate":67.0,"stage_dist":{"cold":5},"metrics":{"qyt":0.0,"zt":80.0,"allsel":80.0,"four_m":100.0,"prod_aggr":0.0,"pk_youtou":20.0,"aigc":100.0,"max30":0,"oneclick":0,"cnt_per_acct":33.84,"ad_per_acct":6.37,"dup_rate":38.48,"acct_cnt":2.79,"ctr":4.51,"skip3s":70.04,"enter":2.25,"click":42.9,"order":6.67}},"疾风文化":{"room_count":4,"spend_total":4162.47,"achievement_rate":39.7,"stage_dist":{"leap":3,"cold":1},"metrics":{"qyt":50.0,"zt":25.0,"allsel":25.0,"four_m":25.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":100.0,"max30":11.34,"oneclick":34.28,"cnt_per_acct":8.49,"ad_per_acct":4.7,"dup_rate":21.31,"acct_cnt":2.66,"ctr":1.86,"skip3s":59.06,"enter":1.37,"click":57.79,"order":21.38}},"深圳响当当":{"room_count":1,"spend_total":0,"achievement_rate":0,"stage_dist":{"cold":1},"metrics":{"qyt":0.0,"zt":0.0,"allsel":0.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":0,"max30":0,"oneclick":0,"cnt_per_acct":0,"ad_per_acct":0,"dup_rate":0,"acct_cnt":0.0,"ctr":0,"skip3s":0,"enter":0,"click":0,"order":0}},"上海亦芯":{"room_count":5,"spend_total":12658.38,"achievement_rate":55.5,"stage_dist":{"leap":2,"cold":3},"metrics":{"qyt":20.0,"zt":60.0,"allsel":60.0,"four_m":80.0,"prod_aggr":0.0,"pk_youtou":20.0,"aigc":74.08,"max30":0.49,"oneclick":11.78,"cnt_per_acct":138.8,"ad_per_acct":19.24,"dup_rate":39.59,"acct_cnt":2.52,"ctr":3.42,"skip3s":66.64,"enter":1.45,"click":66.87,"order":5.45}},"十三邀":{"room_count":2,"spend_total":4253.25,"achievement_rate":62.9,"stage_dist":{"leap":1,"cold":1},"metrics":{"qyt":50.0,"zt":50.0,"allsel":50.0,"four_m":50.0,"prod_aggr":50.0,"pk_youtou":0.0,"aigc":100.0,"max30":50.11,"oneclick":99.77,"cnt_per_acct":114.45,"ad_per_acct":32.63,"dup_rate":45.79,"acct_cnt":3.0,"ctr":2.89,"skip3s":87.83,"enter":2.62,"click":6.39,"order":8.25}},"厚拓科技":{"room_count":22,"spend_total":167556.5,"achievement_rate":43.2,"stage_dist":{"head":5,"leap":3,"cold":14},"metrics":{"qyt":13.6,"zt":50.0,"allsel":50.0,"four_m":18.2,"prod_aggr":0.0,"pk_youtou":18.2,"aigc":75.33,"max30":61.18,"oneclick":56.45,"cnt_per_acct":45.31,"ad_per_acct":10.36,"dup_rate":39.5,"acct_cnt":4.21,"ctr":2.08,"skip3s":59.41,"enter":1.37,"click":68.1,"order":9.14}},"厦门众联":{"room_count":2,"spend_total":5410.01,"achievement_rate":63.2,"stage_dist":{"leap":1,"cold":1},"metrics":{"qyt":0.0,"zt":100.0,"allsel":100.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":100.0,"aigc":100.0,"max30":100.0,"oneclick":0.0,"cnt_per_acct":160.74,"ad_per_acct":18.41,"dup_rate":40.88,"acct_cnt":2.0,"ctr":3.31,"skip3s":63.94,"enter":2.53,"click":52.4,"order":9.19}},"广州晨曦":{"room_count":20,"spend_total":40950.99,"achievement_rate":46.6,"stage_dist":{"head":2,"leap":4,"cold":14},"metrics":{"qyt":15.0,"zt":50.0,"allsel":50.0,"four_m":40.0,"prod_aggr":5.0,"pk_youtou":40.0,"aigc":62.09,"max30":96.83,"oneclick":19.41,"cnt_per_acct":76.17,"ad_per_acct":17.16,"dup_rate":36.07,"acct_cnt":3.56,"ctr":2.96,"skip3s":58.17,"enter":1.87,"click":67.46,"order":6.28}},"渠网在线":{"room_count":3,"spend_total":2659.81,"achievement_rate":33.3,"stage_dist":{"leap":1,"cold":2},"metrics":{"qyt":0.0,"zt":33.3,"allsel":33.3,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":100.0,"max30":47.24,"oneclick":0.0,"cnt_per_acct":17.55,"ad_per_acct":3.71,"dup_rate":11.47,"acct_cnt":7.47,"ctr":3.37,"skip3s":68.11,"enter":2.09,"click":41.07,"order":5.78}},"微盟":{"room_count":13,"spend_total":37955.62,"achievement_rate":38.9,"stage_dist":{"head":1,"leap":5,"cold":7},"metrics":{"qyt":7.7,"zt":30.8,"allsel":30.8,"four_m":7.7,"prod_aggr":7.7,"pk_youtou":30.8,"aigc":91.39,"max30":50.28,"oneclick":0.0,"cnt_per_acct":53.2,"ad_per_acct":10.17,"dup_rate":22.8,"acct_cnt":2.38,"ctr":1.97,"skip3s":63.66,"enter":1.28,"click":64.01,"order":3.81}},"北京众赢":{"room_count":8,"spend_total":14393.43,"achievement_rate":36.6,"stage_dist":{"leap":4,"cold":4},"metrics":{"qyt":12.5,"zt":50.0,"allsel":50.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":67.52,"max30":48.95,"oneclick":23.7,"cnt_per_acct":16.24,"ad_per_acct":4.9,"dup_rate":17.67,"acct_cnt":3.63,"ctr":2.16,"skip3s":67.13,"enter":1.81,"click":63.2,"order":12.26}},"卓鹅":{"room_count":1,"spend_total":6844.28,"achievement_rate":44.0,"stage_dist":{"leap":1},"metrics":{"qyt":0.0,"zt":0.0,"allsel":0.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":0,"max30":20.0,"oneclick":20.0,"cnt_per_acct":22.0,"ad_per_acct":5.0,"dup_rate":16.2,"acct_cnt":1.0,"ctr":3.77,"skip3s":63.6,"enter":3.1,"click":65.9,"order":12.99}},"小牛传媒":{"room_count":17,"spend_total":47798.5,"achievement_rate":54.5,"stage_dist":{"head":1,"leap":8,"cold":8},"metrics":{"qyt":23.5,"zt":58.8,"allsel":58.8,"four_m":5.9,"prod_aggr":0.0,"pk_youtou":52.9,"aigc":93.18,"max30":53.11,"oneclick":36.58,"cnt_per_acct":122.14,"ad_per_acct":18.78,"dup_rate":37.04,"acct_cnt":3.19,"ctr":2.68,"skip3s":46.71,"enter":2.0,"click":59.83,"order":10.84}}};
+const RAW_DATA=[{"name":"疾风文化","client_cnt":1,"clients":[{"name":"宝家洁","score":null}],"industries":[]},{"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":null}],"industries":[]},{"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":null}],"industries":[]},{"name":"厚拓科技","client_cnt":4,"clients":[{"name":"太力","score":null},{"name":"上海成事好物","score":null},{"name":"迈巴勒","score":null},{"name":"徕芬","score":null}],"industries":[]},{"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":null},{"name":"太力","score":null},{"name":"上海成事好物","score":null}],"industries":[]},{"name":"蓝橘传媒","client_cnt":3,"clients":[{"name":"宝家洁","score":null},{"name":"梦创","score":null},{"name":"好太太","score":null}],"industries":[]},{"name":"上海亦芯","client_cnt":2,"clients":[{"name":"上海成事好物","score":null},{"name":"友望","score":null}],"industries":[]},{"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null}],"industries":[]},{"name":"广州晨曦","client_cnt":1,"clients":[{"name":"友望","score":null}],"industries":[]}];
+const STAGES=["total","qingliang","yangsheng","huanxin"];
+const STAGE_LABEL={total:"总榜",qingliang:"清凉节",yangsheng:"养生节",huanxin:"焕新节"};
+// 客户榜积分（人货场维度累加分）— 每天从 http://1.14.143.207/peipei-mhshj/ 同步一次
+// 结构：{ 代理商名: { total_score: 总积分, clients: [{name, score, breakdown}], synced_at } }
+// 7/20 客户榜开赛前保持空对象，评分自动为 0
+const CLIENT_LB_SCORES={};
+const CLIENT_LB_SYNC_INFO={last_sync:null,note:"客户榜积分（人货场三维度）尚未开赛，评分暂为 0；7/20 后每日刷新"};
+let currentStage="total";
+let isAdmin=sessionStorage.getItem("agentAdmin")==="1";
+let AGENTS=[];
+const CLIENT_DASHBOARD_URL="http://1.14.143.207/peipei-mhshj/";
+const PWD="happiness720";
+const LSKEY=stage=>`agent_data_${stage}`;
+const LSKEY_V=stage=>`agent_value_${stage}`;
+
+function loadStageData(stage){
+  const s=localStorage.getItem(LSKEY(stage));
+  if(s){try{return JSON.parse(s)}catch(e){}}
+  if(stage==="total")return JSON.parse(JSON.stringify(RAW_DATA));
+  return null;
+}
+function loadValueData(stage){
+  const s=localStorage.getItem(LSKEY_V(stage));
+  if(s){try{return JSON.parse(s)}catch(e){}}
+  return null;
+}
+
+function buildScores(data,valueData){
+  const n=data.length;
+  if(n<=1){data.forEach(a=>{a.r=a.p=a.v=a.c=a.total=0;a.disabled=false});return data}
+  const valueMap={};
+  if(valueData){valueData.forEach(v=>{valueMap[v.name]=v})}
+  data.forEach(a=>{
+    // 兼容防御
+    if(!a.clients)a.clients=[];
+    if(a.client_cnt==null)a.client_cnt=a.clients.length;
+    // ===== 数据分（已废弃，兼容占位）=====
+    a.r=0;a.r_cost_chg=0;a.r_price_chg=0;a.r_cost=0;
+    a.p_total_cost=a.p_avg_cost_chg=a.p_avg_price=a.p_avg_price_chg=0;
+
+    // ===== 客户分 70（p）=====
+    // 代理级 = 名下所有客户在客户榜的分数【平均值】 × 0.7
+    // 优先从 clients[].score 直接算（每日刷新只需更新 clients 数组的 score）
+    // 兼容 CLIENT_LB_SCORES 全局对象
+    const clientScores=(a.clients||[]).map(c=>c.score).filter(s=>s!=null&&s>=0);
+    if(clientScores.length>0){
+      const avg=clientScores.reduce((s,x)=>s+x,0)/clientScores.length;
+      a.p_client_avg=Math.round(avg*100)/100;
+      a.p=Math.round(avg*0.7*10)/10;
+      a.hasClientScore=true;
+      a.scoredClientCnt=clientScores.length;
+    }else{
+      const cs=CLIENT_LB_SCORES[a.name];
+      if(cs && cs.avg_score!=null){
+        a.p_client_avg=Math.round(cs.avg_score*100)/100;
+        a.p=Math.round(cs.avg_score*0.7*10)/10;
+        a.hasClientScore=true;
+        a.scoredClientCnt=(cs.clients||[]).length;
+      }else{
+        a.p_client_avg=0;
+        a.p=0;
+        a.hasClientScore=false;
+        a.scoredClientCnt=0;
+      }
+    }
+
+    // ===== 代理协同 30（v）=====
+    // 带动客户报名数、新客拓展数、比赛配合度 各 10 分
+    // 用户填的 0-100 数字 → × 0.1 = 0-10 分
+    const vd=valueMap[a.name];
+    if(vd){
+      a.v_signup=Math.round((vd.signup_clients||0)*0.1*10)/10;
+      a.v_newclient=Math.round((vd.new_clients_pct||0)*0.1*10)/10;
+      a.v_manager=Math.round((vd.manager_score||0)*0.1*10)/10;
+      a.v=Math.round((a.v_signup+a.v_newclient+a.v_manager)*10)/10;
+      a.hasRealValue=true;
+    }else{
+      a.v_signup=a.v_newclient=a.v_manager=0;
+      a.v=0;
+      a.hasRealValue=false;
+    }
+    a.c=0;
+    a.total=Math.round((a.p+a.v)*10)/10;
+    a.disabled=false;
+  });
+  data.sort((x,y)=>y.total-x.total);
+  return data;
+}
+
+function refresh(){
+  const raw=loadStageData(currentStage);
+  const val=loadValueData(currentStage);
+  if(!raw){
+    document.getElementById("rankList").innerHTML=`<div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">📭 「${STAGE_LABEL[currentStage]}」暂无数据，请管理员上传<br/><span style="font-size:10px">或先切到"总榜"看默认数据</span></div>`;
+    document.getElementById("kpiRow").innerHTML="";
+    document.getElementById("stageLabel").textContent="· "+STAGE_LABEL[currentStage];
+    document.getElementById("mockStatus").textContent="等待上传";
+    return;
+  }
+  AGENTS=raw;
+  buildScores(AGENTS,val);
+  renderKPI();renderRank();renderAgentSelect();fillTopPolicies();
+  document.getElementById("stageLabel").textContent="· "+STAGE_LABEL[currentStage];
+  const hasVal=val&&val.length>0;
+  document.getElementById("mockStatus").innerHTML=hasVal?'<span style="color:#3b7a1f">✓ 已上传</span>':'待上传';
+}
+
+function renderKPI(){
+  const clients=new Set();
+  AGENTS.forEach(a=>a.clients.forEach(c=>clients.add(c.name)));
+  const withClientScore=AGENTS.filter(a=>a.hasClientScore).length;
+  const scored=AGENTS.filter(a=>a.hasClientScore).map(a=>a.p_client_avg);
+  const overallAvg=scored.length?(scored.reduce((s,x)=>s+x,0)/scored.length).toFixed(1):"—";
+  const topName=AGENTS[0]?AGENTS[0].name:"—";
+  document.getElementById("kpiRow").innerHTML=`
+    <div class="stat-card"><div class="num">${AGENTS.length}</div><div class="label">参赛代理商</div></div>
+    <div class="stat-card teal"><div class="num">${clients.size}</div><div class="label">覆盖客户数</div></div>
+    <div class="stat-card purple"><div class="num">${withClientScore}<small>/${AGENTS.length}</small></div><div class="label">已同步客户分</div></div>
+    <div class="stat-card amber"><div class="num" style="font-size:14px;line-height:32px">${topName}</div><div class="label">当前 Top1</div></div>`;
+}
+function medalCls(i){return i===0?"m1":i===1?"m2":i===2?"m3":""}
+function medalIcon(i){return i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1}
+function trendCell(v){
+  if(v>=999)return `<div class="trend up">新增</div>`;
+  const r=Math.round(v*10)/10;
+  if(v>5)return `<div class="trend up">↑${r}%</div>`;
+  if(v<-5)return `<div class="trend down">↓${Math.abs(r)}%</div>`;
+  return `<div class="trend flat">${r>=0?"+":""}${r}%</div>`;
+}
+function rowCls(i,d){if(d)return "disabled";return i===0?"top1":i===1?"top2":i===2?"top3":""}
+function initials(n){return n.slice(0,2)}
+function fmt(v){if(v>=10000)return (v/10000).toFixed(1)+"万";if(v>=1000)return (v/1000).toFixed(1)+"k";return Math.round(v).toString()}
+function chgClass(v){if(v===0||v===null||v===undefined)return "chg-flat";if(v>=999)return "chg-inf";return v>0?"chg-up":"chg-down"}
+function chgFmt(v){if(v===0||v===null||v===undefined)return "—";if(v>=999)return "新增";const r=Math.round(v*10)/10;return (r>0?"↑":"↓")+Math.abs(r)+"%"}
+
+function renderRank(){
+  const html=AGENTS.map((a,i)=>`
+    <div class="rank-row ${rowCls(i,a.disabled)}" onclick="toggleDrawer(${i})">
+      <div class="rk ${a.disabled?"":medalCls(i)}">${a.disabled?"—":medalIcon(i)}</div>
+      <div class="agent-cell">
+        <div class="agent-logo">${initials(a.name)}</div>
+        <div style="min-width:0">
+          <div class="agent-name" title="${a.name}">${a.name}${a.hasRealValue?'<span class="ok-tag" title="已有代理协同评分">✓协同</span>':''}</div>
+          <div class="agent-sub">${a.client_cnt} 家客户 · ${a.clients.map(c=>c.name).join("、")}</div>
+        </div>
+      </div>
+      <div class="total-cell">${a.total}</div>
+      <div class="sub-cell" style="font-weight:600;color:${a.hasClientScore?'#4d7cff':'#a0abc4'}">${a.p||"—"}<span class="u">/70</span></div>
+      <div class="sub-cell" style="font-weight:600;color:${a.hasRealValue?'#00c6a7':'#a0abc4'}">${a.v||"—"}<span class="u">/30</span></div>
+      <div class="sub-cell" style="color:${a.hasClientScore?'#5c6a8c':'#a0abc4'}">${a.hasClientScore?a.p_client_avg.toFixed(1):"—"}</div>
+      <div class="sub-cell">${a.client_cnt}</div>
+      <div style="text-align:right"><button class="exp-btn" onclick="event.stopPropagation();toggleDrawer(${i})">展开</button></div>
+    </div>
+    <div class="drawer" id="drawer-${i}">
+      <div class="drawer-inner">
+        <div>
+          <h4>综合分构成</h4>
+          <div class="radar" id="radar-${i}"></div>
+          <h4 style="margin-top:6px"><span>分项详情</span><a class="link" onclick="shotOneAgent(${i})">📸 生成截图</a></h4>
+          <div style="font-size:11px;color:#5c6a8c;line-height:1.7;background:#fff;border-radius:6px;padding:8px">
+            <div style="font-weight:600;color:#4d7cff;margin-bottom:2px">客户分 70 · <b>${a.p}</b>${a.hasClientScore?` <span style="color:#3b7a1f;font-size:9px">✓ 客户榜</span>`:' <span style="color:#a0abc4;font-size:9px">(客户榜 7/20 开赛)</span>'}</div>
+            ${a.hasClientScore?`<div style="padding-left:8px;font-size:10px;color:#93a0bd">└ 名下客户平均分 ${a.p_client_avg}/100 · 覆盖客户 ${a.client_cnt} 家</div>`:`<div style="padding-left:8px;font-size:10px;color:#93a0bd">└ 覆盖客户 ${a.client_cnt} 家 · 等客户榜数据</div>`}
+            <div style="margin-top:4px;font-weight:600;color:#4d7cff">代理协同 30 · <b>${a.v}</b>${a.hasRealValue?"":' <span style="color:#a0abc4;font-size:9px">(比赛结束后上传)</span>'}</div>
+            <div style="padding-left:8px;font-size:10px;color:#93a0bd">├ 带动客户报名数：<b style="color:#5c6a8c">${a.v_signup}/10</b></div>
+            <div style="padding-left:8px;font-size:10px;color:#93a0bd">├ 新客拓展数：<b style="color:#5c6a8c">${a.v_newclient}/10</b></div>
+            <div style="padding-left:8px;font-size:10px;color:#93a0bd">└ 比赛配合度：<b style="color:#5c6a8c">${a.v_manager}/10</b></div>
+          </div>
+        </div>
+        <div>
+          <h4>
+            <span>名下客户结果指标 · ${a.client_cnt} 家</span>
+            <a class="link" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">运营指标看板 ↗</a>
+          </h4>
+          <div class="ct">${clientTableHtml(a)}</div>
+        </div>
+      </div>
+    </div>`).join("");
+  document.getElementById("rankList").innerHTML=html;
+}
+function clientTableHtml(a){
+  const cs=(a.clients||[]).slice().sort((x,y)=>(y.score||0)-(x.score||0));
+  if(cs.length===0)return '<div style="padding:20px;text-align:center;color:#a0abc4;font-size:11px">暂无客户数据</div>';
+  const scores=cs.map(c=>c.score).filter(s=>s!=null&&s>=0);
+  const avg=scores.length?(scores.reduce((s,x)=>s+x,0)/scores.length).toFixed(1):"—";
+  return `<table>
+    <thead><tr><th style="text-align:left">客户</th><th>客户榜分数</th><th>状态</th><th>详情</th></tr></thead>
+    <tbody>${cs.map(c=>{
+      const has=c.score!=null&&c.score>=0;
+      const scoreStr=has?c.score.toFixed(1):"—";
+      const badge=has?'<span style="color:#3b7a1f;background:#e5f7f0;padding:1px 6px;border-radius:4px;font-size:10px">✓ 已同步</span>':'<span style="color:#a0abc4;background:#f4f6fc;padding:1px 6px;border-radius:4px;font-size:10px">等 7/20</span>';
+      return `<tr>
+        <td class="cust">${c.name}</td>
+        <td style="font-weight:${has?'700':'400'};color:${has?'#4d7cff':'#a0abc4'};font-size:${has?'13px':'11px'}">${scoreStr}</td>
+        <td>${badge}</td>
+        <td><a class="link-out" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">看板↗</a></td>
+      </tr>`;
+    }).join("")}
+    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td colspan="2" style="text-align:left;color:#93a0bd;font-size:10px">共 ${cs.length} 家客户，参与均分计算</td></tr>
+    </tbody></table>`;
+}
+let openIdx=-1;
+function toggleDrawer(i){
+  const d=document.getElementById("drawer-"+i);
+  if(openIdx===i){d.classList.remove("open");openIdx=-1;return}
+  if(openIdx>=0)document.getElementById("drawer-"+openIdx).classList.remove("open");
+  d.classList.add("open");openIdx=i;
+  setTimeout(()=>{drawRadar(i)},50);
+}
+function drawRadar(i){
+  const el=document.getElementById("radar-"+i);
+  if(!el||el.dataset.done)return;
+  const a=AGENTS[i];
+  const ch=echarts.init(el);
+  ch.setOption({
+    grid:{left:60,right:30,top:15,bottom:20},
+    xAxis:{type:"value",max:70,axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:"#eef2fc"}},axisLabel:{color:"#a0abc4",fontSize:9}},
+    yAxis:{type:"category",data:["代理协同/30","客户分/70"],axisLine:{show:false},axisTick:{show:false},axisLabel:{color:"#5c6a8c",fontSize:10}},
+    series:[{type:"bar",data:[{value:a.v,itemStyle:{color:"#00c6a7"}},{value:a.p,itemStyle:{color:"#4d7cff"}}],barWidth:14,label:{show:true,position:"right",color:"#2d3552",fontSize:10,fontWeight:600,formatter:params=>params.value.toFixed(1)}}]
+  });
+  el.dataset.done=1;
+}
+function switchStage(el){document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");currentStage=el.dataset.stage;openIdx=-1;refresh()}
+function switchPolicy(el,type){document.querySelectorAll(".p-tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");document.getElementById("policyAgent").style.display=type==="agent"?"grid":"none";document.getElementById("policyClient").style.display=type==="client"?"block":"none";if(type==="client")renderClientPolicy()}
+function fillTopPolicies(){
+  const valid=AGENTS.filter(a=>!a.disabled);
+  const t1=valid[0],t2=valid[1],t3=valid[2];
+  if(t1){document.getElementById("top1Name").textContent="当前 Top1："+t1.name;document.getElementById("top1Score").textContent="综合分 "+t1.total}
+  if(t2){document.getElementById("darkName").textContent="当前 Top2："+t2.name;document.getElementById("darkChg").textContent="综合分 "+t2.total}
+  if(t3){document.getElementById("baseName").textContent="当前 Top3："+t3.name;document.getElementById("baseScore").textContent="综合分 "+t3.total}
+}
+function renderAgentSelect(){
+  const sel=document.getElementById("agentSel");
+  sel.innerHTML=AGENTS.filter(a=>!a.disabled).slice(0,10).map((a,i)=>`<option value="${AGENTS.indexOf(a)}">${a.name}（${a.client_cnt} 家）</option>`).join("");
+}
+const CLIENT_POLICY=[];
+function renderClientPolicy(){
+  const idx=+document.getElementById("agentSel").value;
+  const a=AGENTS[idx];if(!a)return;
+  const clientNames=new Set(a.clients.map(c=>c.name));
+  const matched=CLIENT_POLICY.filter(p=>[...clientNames].some(cn=>p.match(cn)));
+  const html=matched.map((p,i)=>{
+    const hits=[...clientNames].filter(cn=>p.match(cn));
+    const progress=[35,68,54,72,41,58][i%6];
+    return `<div class="p-card"><span class="p-tag">${p.tag}</span><h5>${p.name}</h5><div class="p-match">✓ 匹配 ${a.name} 名下 ${hits.length} 家客户${hits.length<=2?"：<b>"+hits.map(h=>h.length>8?h.slice(0,8)+"…":h).join("、")+"</b>":""}</div><div class="p-desc">${p.desc}</div><div class="p-bar"><div style="width:${progress}%"></div></div><div class="p-foot"><span>当前进度</span><span>${progress}%</span></div></div>`
+  }).join("");
+  document.getElementById("clientPolicyGrid").innerHTML=html||'<div style="grid-column:1/-1;padding:30px;text-align:center;color:#a0abc4;font-size:12px">📋 客户侧政策待录入<br/><span style="font-size:10px;color:#c8d0e0">由运营/渠道经理确认后统一维护</span></div>';
+}
+
+/* ============ 管理登录 ============ */
+function clickAdmin(){
+  if(isAdmin){toggleAdminPanel();return}
+  document.getElementById("pwdInput").value="";
+  document.getElementById("pwdErr").style.display="none";
+  openModal("loginModal");
+  setTimeout(()=>document.getElementById("pwdInput").focus(),100);
+}
+function doLogin(){
+  const v=document.getElementById("pwdInput").value;
+  if(v===PWD){
+    isAdmin=true;sessionStorage.setItem("agentAdmin","1");closeModal("loginModal");
+    document.getElementById("adminBtn").classList.add("on");document.getElementById("adminBtn").textContent="🔓 管理中";
+    toggleAdminPanel();
+  }else{document.getElementById("pwdErr").style.display="block"}
+}
+function doLogout(){isAdmin=false;sessionStorage.removeItem("agentAdmin");document.getElementById("adminBtn").classList.remove("on");document.getElementById("adminBtn").textContent="🔒 管理";closeAdminPanel()}
+function toggleAdminPanel(){const p=document.getElementById("adminPanel");if(p.classList.contains("open")){closeAdminPanel();return}renderSlots();p.classList.add("open")}
+function closeAdminPanel(){document.getElementById("adminPanel").classList.remove("open")}
+function openModal(id){document.getElementById(id).classList.add("open")}
+function closeModal(id){document.getElementById(id).classList.remove("open")}
+
+function renderSlots(){
+  const STAGE_TITLE={total:"🏅 总榜",qingliang:"❄️ 清凉节",yangsheng:"🌿 养生节",huanxin:"✨ 焕新节"};
+  const STAGE_SUB={total:"全周期数据",qingliang:"7/20-7/25",yangsheng:"7/25-8/7",huanxin:"8/8-8/20"};
+  document.getElementById("resultSlots").innerHTML=STAGES.map(s=>slotHtml(s,"result",STAGE_TITLE[s],STAGE_SUB[s])).join("");
+  document.getElementById("valueSlots").innerHTML=STAGES.map(s=>slotHtml(s,"value",STAGE_TITLE[s],STAGE_SUB[s])).join("");
+  STAGES.forEach(s=>["result","value"].forEach(k=>updateSlotStatus(s,k)));
+}
+function slotHtml(stage,kind,title,sub){
+  return `<div class="slot" id="slot-${stage}-${kind}">
+    <div class="st"><span>${title}</span><span class="status-tag">未上传</span></div>
+    <div class="sub">${sub}</div>
+    <div class="row">
+      <label class="file-input">📤 上传<input type="file" accept="${kind==="result"?".xlsx,.xls,.csv,.json":".xlsx,.xls,.csv"}" onchange="uploadFile(event,'${stage}','${kind}')"/></label>
+      <button class="clear-btn" onclick="clearData('${stage}','${kind}')">清空</button>
+    </div>
+  </div>`;
+}
+function updateSlotStatus(stage,kind){
+  const el=document.getElementById(`slot-${stage}-${kind}`);
+  if(!el)return;
+  const key=kind==="result"?LSKEY(stage):LSKEY_V(stage);
+  const has=localStorage.getItem(key);
+  if(has){el.classList.add("loaded");el.querySelector(".status-tag").textContent="✓ 已上传"}
+  else{el.classList.remove("loaded");el.querySelector(".status-tag").textContent="未上传"}
+}
+
+function uploadFile(ev,stage,kind){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      let parsed;
+      if(file.name.endsWith(".json")){parsed=JSON.parse(e.target.result)}
+      else{
+        const wb=XLSX.read(e.target.result,{type:"array"});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{defval:0});
+        parsed=kind==="result"?aggregateResultRows(rows):parseValueRows(rows);
+      }
+      const key=kind==="result"?LSKEY(stage):LSKEY_V(stage);
+      localStorage.setItem(key,JSON.stringify(parsed));
+      updateSlotStatus(stage,kind);
+      if(stage===currentStage)refresh();
+      alert(`✓ 「${STAGE_LABEL[stage]}」${kind==="result"?"结果指标":"价值/协同"}上传成功！\n共 ${parsed.length} 条记录`);
+    }catch(err){alert("解析失败："+err.message)}
+    ev.target.value="";
+  };
+  if(file.name.endsWith(".json"))reader.readAsText(file);else reader.readAsArrayBuffer(file);
+}
+function toNum(v){if(v===null||v===undefined||v==="~"||v==="")return 0;if(v==="∞"||v==="inf")return 999;const n=parseFloat(v);return isNaN(n)?0:n}
+function aggregateResultRows(rows){
+  const map={};
+  rows.forEach(r=>{
+    const a=r["代理商政策集团"]||r["代理商"]||r["agent"];
+    const c=r["客户简称"]||r["客户"]||r["client"];
+    if(!a||a==="整体")return;
+    const cost=toNum(r["消耗(元)"]||r["消耗"]||r["cost"]);
+    const daily=toNum(r["有消耗日期日均消耗(元)"]||r["日均消耗"]||r["daily"]);
+    const roi=toNum(r["下单ROI"]||r["ROI"]||r["roi"]);
+    const price=toNum(r["下单单价(元)"]||r["下单单价"]||r["price"]);
+    const cost_chg=toNum(r["消耗(元)环比变化率(%)"]||r["消耗环比"]||r["cost_chg"]);
+    const roi_chg=toNum(r["下单ROI环比变化率(%)"]||r["ROI环比"]||r["roi_chg"]);
+    const daily_chg=toNum(r["有消耗日期日均消耗(元)环比变化率(%)"]||r["日均消耗环比"]||r["daily_chg"]);
+    const price_chg=toNum(r["下单单价(元)环比变化率(%)"]||r["单价环比"]||r["price_chg"]);
+    if(!map[a])map[a]={name:a,clients:[],total_cost:0,daily_cost:0,roi_sum:0,roi_cnt:0};
+    map[a].clients.push({name:c||"未命名",cost,daily,roi,price,cost_chg,roi_chg,daily_chg,price_chg});
+    map[a].total_cost+=cost;
+    map[a].daily_cost+=daily;
+    if(roi>0){map[a].roi_sum+=roi*cost;map[a].roi_cnt+=cost}
+  });
+  return Object.values(map).map(a=>{
+    const avg_roi=a.roi_cnt?a.roi_sum/a.roi_cnt:0;
+    const avg_cost_chg=a.clients.length?a.clients.reduce((s,c)=>s+c.cost_chg,0)/a.clients.length:0;
+    const avg_price=a.clients.filter(c=>c.price>0).length?a.clients.filter(c=>c.price>0).reduce((s,c)=>s+c.price,0)/a.clients.filter(c=>c.price>0).length:0;
+    return {name:a.name,clients:a.clients,total_cost:Math.round(a.total_cost*100)/100,daily_cost:Math.round(a.daily_cost*100)/100,avg_roi:Math.round(avg_roi*1000)/1000,avg_price:Math.round(avg_price*100)/100,avg_cost_chg:Math.round(avg_cost_chg*100)/100,client_cnt:a.clients.length};
+  }).sort((x,y)=>y.total_cost-x.total_cost);
+}
+function parseValueRows(rows){
+  return rows.filter(r=>r["代理商"]||r["agent"]||r["name"]).map(r=>({
+    name:r["代理商"]||r["agent"]||r["name"],
+    signup_clients:toNum(r["带动客户报名数(分)"]||r["带动客户报名数"]||r["signup_clients"]),
+    new_clients_pct:toNum(r["新客拓展数"]||r["新客拓展分"]||r["new_clients_pct"]),
+    manager_score:toNum(r["比赛配合度"]||r["渠道经理打分"]||r["manager_score"]),
+    process_score:r["运营过程分(客户看板)"]!==undefined?toNum(r["运营过程分(客户看板)"]):(r["客户带动分(客户看板)"]!==undefined?toNum(r["客户带动分(客户看板)"]):(r["过程分(客户看板)"]!==undefined?toNum(r["过程分(客户看板)"]):null))
+  }));
+}
+function clearData(stage,kind){
+  if(!confirm(`确定清空「${STAGE_LABEL[stage]}」的${kind==="result"?"结果指标":"价值/协同"}数据？`))return;
+  const key=kind==="result"?LSKEY(stage):LSKEY_V(stage);
+  localStorage.removeItem(key);
+  updateSlotStatus(stage,kind);
+  if(stage===currentStage)refresh();
+}
+function exportAll(){
+  const out={};
+  STAGES.forEach(s=>{
+    out[s]={result:loadStageData(s),value:loadValueData(s)};
+  });
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=`代理商打榜数据备份_${new Date().toISOString().slice(0,10)}.json`;a.click();
+  URL.revokeObjectURL(url);
+}
+function downloadValueTpl(){
+  const headers=["代理商","带动客户报名数(分)","新客拓展数","比赛配合度","备注"];
+  const rows=AGENTS.length?AGENTS.map(a=>[a.name,"","","",""]):[["示例代理商","80","65","90",""]];
+  const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+  ws["!cols"]=[{wch:20},{wch:20},{wch:16},{wch:18},{wch:24}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"价值与协同");
+  const ws2=XLSX.utils.aoa_to_sheet([
+    ["字段","说明","上传时机","打分权重"],
+    ["带动客户报名数(分)","代理带动客户报名参与打榜的规模分（管理员按报名客户数换算为 0-100）","比赛结束后","代理协同 30 · 10 分"],
+    ["新客拓展数","代理本期新签客户数换算为 0-100 分","比赛结束后","代理协同 30 · 10 分"],
+    ["比赛配合度","渠道经理对代理比赛配合度综合打分（0-100）","比赛结束后","代理协同 30 · 10 分"],
+    ["","","",""],
+    ["【填写说明】","","",""],
+    ["1","代理商列名必须与结果指标里的代理商名称完全一致","",""],
+    ["2","所有字段填 0-100 的数字，不加 % 号（会自动折算到 5 分制）","",""],
+    ["3","客户分 70 分：从客户榜 http://1.14.143.207/peipei-mhshj/ 每日 13:00 自动同步，无需手填","",""],
+    ["4","3 项都是活动结束时统一上传","",""]
+  ]);
+  XLSX.utils.book_append_sheet(wb,ws2,"字段说明");
+  XLSX.writeFile(wb,"代理价值+协同_数据模板.xlsx");
+}
+
+/* ============ 截图 ============ */
+function buildShotCard(a,rank){
+  return `<div class="shot-card">
+    <div class="sh-hdr">
+      <h2>🏆 ${a.name}</h2>
+      <div class="stg">鹅选美好生活月 · ${STAGE_LABEL[currentStage]} · ${new Date().toLocaleDateString("zh-CN")}</div>
+    </div>
+    <div class="rank-highlight">
+      <div class="item"><div class="k big">#${rank}</div><div class="v">当前排名</div></div>
+      <div class="item"><div class="k">${a.total}</div><div class="v">综合分</div></div>
+      <div class="item"><div class="k">${a.client_cnt}</div><div class="v">名下客户</div></div>
+      <div class="item"><div class="k">${a.hasClientScore?a.p_client_avg.toFixed(1):"—"}</div><div class="v">客户平均分</div></div>
+    </div>
+    <div style="display:flex;gap:10px;font-size:12px;margin-bottom:8px">
+      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">客户分 /70</div><div style="font-weight:700;font-size:20px;color:#4d7cff">${a.p}</div></div>
+      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">代理协同 /30</div><div style="font-weight:700;font-size:20px;color:#00c6a7">${a.v}</div></div>
+    </div>
+    <h6>名下客户表现（${a.client_cnt} 家）</h6>
+    ${clientTableHtml(a)}
+    <div class="footer">腾讯营销 · 消电日百 · 数据 T+1 更新 · 请勿外传</div>
+  </div>`;
+}
+async function shotOneAgent(i){
+  const a=AGENTS[i];
+  const rank=AGENTS.filter(x=>!x.disabled).indexOf(a)+1;
+  const holder=document.getElementById("shotHolder");
+  holder.innerHTML=buildShotCard(a,rank);
+  const target=holder.querySelector(".shot-card");
+  try{
+    const canvas=await html2canvas(target,{backgroundColor:"#ffffff",scale:2,useCORS:true});
+    canvas.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);
+      const dl=document.createElement("a");dl.href=url;dl.download=`${a.name}_${STAGE_LABEL[currentStage]}_排名${rank}.png`;dl.click();
+      URL.revokeObjectURL(url);
+    });
+  }catch(err){alert("截图失败："+err.message)}
+  setTimeout(()=>{holder.innerHTML=""},1000);
+}
+async function shotEachAgent(){
+  if(!confirm(`将为「${STAGE_LABEL[currentStage]}」榜上 ${AGENTS.length} 家代理逐一生成截图并批量下载，确定继续？`))return;
+  for(let i=0;i<AGENTS.length;i++){await shotOneAgent(i);await new Promise(r=>setTimeout(r,800))}
+}
+async function shotFullDashboard(){
+  const target=document.querySelector(".container");
+  try{
+    const canvas=await html2canvas(target,{backgroundColor:null,scale:1.5,useCORS:true,windowWidth:target.scrollWidth,windowHeight:target.scrollHeight});
+    canvas.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);
+      const dl=document.createElement("a");dl.href=url;dl.download=`代理商打榜_${STAGE_LABEL[currentStage]}_${new Date().toISOString().slice(0,10)}.png`;dl.click();
+      URL.revokeObjectURL(url);
+    });
+  }catch(err){alert("截图失败："+err.message)}
+}
+
+/* init */
+refresh();
+if(isAdmin){document.getElementById("adminBtn").classList.add("on");document.getElementById("adminBtn").textContent="🔓 管理中"}
+</script>
+</body>
+</html>
