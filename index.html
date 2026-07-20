@@ -215,13 +215,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
           </select>
           <a id="biLink" class="mini-btn" href="https://adata.woa.com/bi/view/18372" target="_blank" style="font-size:10px;text-decoration:none">📊 BI 取数</a>
           <button class="mini-btn" onclick="location.reload()">🔄 重新加载</button>
-          <button class="mini-btn primary admin-only" style="display:none" onclick="document.getElementById('infraUpload').click()">📤 上传数据</button>
-          <input type="file" id="infraUpload" accept=".xlsx,.xls,.csv,.json" style="display:none" onchange="uploadInfraData(event)"/>
+          <button class="mini-btn primary admin-only" style="display:none" onclick="document.getElementById('infraUpload').click()">📤 上传BI数据（可多选）</button>
+          <input type="file" id="infraUpload" accept=".xlsx,.xls,.csv" multiple style="display:none" onchange="handleInfraFiles(event)"/>
           <button class="mini-btn admin-only" style="display:none" onclick="toggleAdminPanel()">📋 管理</button>
         </span>
       </h3>
       <div id="infraContent">
-        <div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">暂无运营基建数据，管理员可通过上方「📤 上传数据」导入<br/><span style="font-size:10px">数据来源：<a style="color:#4d7cff;cursor:pointer" id="biLinkText" href="https://adata.woa.com/bi/view/18372" target="_blank">BI 取数链接</a></span></div>
+        <div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">暂无运营基建数据，管理员可通过上方「📤 上传BI数据」一次性多选当天下载的所有 CSV/Excel 导入<br/><span style="font-size:10px">数据来源：<a style="color:#4d7cff;cursor:pointer" id="biLinkText" href="https://adata.woa.com/bi/view/18372" target="_blank">BI 取数链接</a> · 达标率需逐客户手填</span></div>
       </div>
     </div>
   </div>
@@ -266,19 +266,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 </div>
 <div class="admin-panel" id="adminPanel">
   <h4>🛠 管理面板 <button class="close-btn" onclick="closeAdminPanel()">收起</button></h4>
+
   <div class="tpl-box">
-    <b>数据上传说明：</b>4 个榜（总榜/清凉/养生/焕新）各一个独立数据槽，上传后当前榜单实时刷新。<br/>
-    <b>① 客户分 70</b>：从<a onclick="window.open('http://1.14.143.207/peipei-mhshj/','_blank')" style="cursor:pointer">客户榜↗</a>抓取名下客户平均分（每天 13:00 自动同步）<br/>
-    <b>② 代理协同 30</b>：<a onclick="downloadValueTpl()">📥 下载模板</a> 填 3 列各 0-100 分（带动客户报名数、新客拓展数、比赛配合度），<b>比赛结束后</b>统一上传<br/>
-    数据都存在浏览器本地（localStorage），换机器需重新上传
+    <b>综合分 100 = 客户分 70（榜单均分 30 + 运营基建 40）+ 代理协同 30</b><br/>
+    ① 榜单均分：从<a onclick="window.open('http://1.14.143.207/peipei-mhshj/','_blank')" style="cursor:pointer">客户榜↗</a>每天 13:00 自动同步，无需手动操作<br/>
+    ② 运营基建：每天从 <a onclick="window.open('https://adata.woa.com/bi/view/18372','_blank')" style="cursor:pointer">BI↗</a> 下载当天全部数据文件，在下方「① 运营基建」一次性多选上传，系统自动识别合并<br/>
+    ③ 代理协同：比赛结束后统一上传，下方「② 代理协同」下载模板填写<br/>
+    <span style="color:#d14343">数据存在浏览器本地（localStorage），换电脑/换浏览器需重新上传；建议定期点「📦 导出全部数据」备份一份到本地文件</span>
   </div>
-  <div style="font-size:12px;font-weight:700;color:#2d3552;margin-bottom:8px">① 结果指标（可选 · 已废弃）</div>
-  <div class="slot-grid" id="resultSlots"></div>
-  <div style="font-size:12px;font-weight:700;color:#2d3552;margin:14px 0 8px">② 代理协同（3 项各 10 分，比赛结束后上传）</div>
+
+  <div style="font-size:13px;font-weight:700;color:#2d3552;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+    ① 运营基建数据（每日上传）
+    <span style="font-size:10px;font-weight:400;color:#93a0bd" id="infraLastUpload">尚未上传</span>
+  </div>
+  <div style="background:#f4f6fc;border-radius:10px;padding:12px;margin-bottom:14px">
+    <div style="font-size:11px;color:#6b7898;line-height:1.6;margin-bottom:10px">
+      每天从 BI 页面下载到的所有「通用分析数据集」CSV/Excel（不管几份、字段是否一致），<b>一次性全选拖进来即可</b>，系统会按代理+客户自动去重合并、按表头自动匹配对应字段，不需要手动拼表格。<br/>
+      <b style="color:#8b5a0a">达标率</b>目前 BI 未提供现成字段，需要在下方「客户达标率」区域逐个手填（其余字段全部自动来自上传的文件）。
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <label class="file-input" style="padding:6px 14px">📤 选择今天的全部 BI 文件（可多选）<input type="file" accept=".xlsx,.xls,.csv" multiple onchange="handleInfraFiles(event)"/></label>
+      <button class="clear-btn" onclick="clearInfraData()">清空运营基建数据</button>
+    </div>
+    <div id="infraUploadSummary" style="font-size:11px;color:#93a0bd"></div>
+  </div>
+
+  <div style="font-size:13px;font-weight:700;color:#2d3552;margin-bottom:6px">📝 客户达标率（手填，逐日更新）</div>
+  <div style="background:#f4f6fc;border-radius:10px;padding:12px;margin-bottom:14px">
+    <div style="font-size:11px;color:#6b7898;margin-bottom:8px">按客户填 0-100 的达标率百分数，直接影响「运营基建 40 分」，改完自动保存</div>
+    <div id="achRateEditor"></div>
+  </div>
+
+  <div style="font-size:13px;font-weight:700;color:#2d3552;margin-bottom:8px">② 代理协同（3 项各 10 分，比赛结束后上传一次）</div>
   <div class="slot-grid" id="valueSlots"></div>
+
   <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-    <button class="mini-btn" onclick="downloadValueTpl()">📥 下载模板</button>
-    <button class="mini-btn" onclick="exportAll()">📦 导出全部数据</button>
+    <button class="mini-btn" onclick="downloadValueTpl()">📥 下载协同模板</button>
+    <button class="mini-btn" onclick="exportAll()">📦 导出全部数据（备份）</button>
     <button class="mini-btn accent" onclick="doLogout()">🚪 退出管理</button>
   </div>
 </div>
@@ -379,6 +403,7 @@ function refresh(){
     return;
   }
   AGENTS=raw;
+  applyAchRateToAgents();
   buildScores(AGENTS,val);
   renderKPI();renderRank();renderAgentSelect();fillTopPolicies();
   document.getElementById("stageLabel").textContent="· "+STAGE_LABEL[currentStage];
@@ -529,9 +554,11 @@ function closeModal(id){document.getElementById(id).classList.remove("open")}
 function renderSlots(){
   const STAGE_TITLE={total:"🏅 总榜",w1:"🚀 第 1 周",w2:"🚀 第 2 周",w3:"🚀 第 3 周"};
   const STAGE_SUB={total:"全周期数据",w1:"7/20-7/26",w2:"7/27-8/2",w3:"8/3-8/9"};
-  document.getElementById("resultSlots").innerHTML=STAGES.map(s=>slotHtml(s,"result",STAGE_TITLE[s],STAGE_SUB[s])).join("");
-  document.getElementById("valueSlots").innerHTML=STAGES.map(s=>slotHtml(s,"value",STAGE_TITLE[s],STAGE_SUB[s])).join("");
-  STAGES.forEach(s=>["result","value"].forEach(k=>updateSlotStatus(s,k)));
+  const valueStages=STAGES.filter(s=>s!=="infra");
+  document.getElementById("valueSlots").innerHTML=valueStages.map(s=>slotHtml(s,"value",STAGE_TITLE[s],STAGE_SUB[s])).join("");
+  valueStages.forEach(s=>updateSlotStatus(s,"value"));
+  renderInfraUploadSummary();
+  renderAchRateEditor();
 }
 function slotHtml(stage,kind,title,sub){
   return `<div class="slot" id="slot-${stage}-${kind}">
@@ -716,100 +743,229 @@ async function shotFullDashboard(){return shotLongImg()}
 
 /* ============ 运营基建 Tab ============ */
 const INFRA_LS_KEY="agent_infra_data";
+const ACH_RATE_LS_KEY="agent_client_ach_rate"; // 达标率：管理员手填，按客户名持久化，不随每日上传覆盖
 let INFRA_BI_LINK="https://adata.woa.com/bi/view/18372";
+
+// 每天从 BI 下载的「通用分析数据集」字段别名映射：无论下载出几份、字段顺序/命名有细微差异，
+// 只要包含这些字段名，都能被自动识别、按（代理商+客户）合并聚合，不需要人工拼表格。
+const INFRA_FIELD_DEFS=[
+  {key:"spend_total",aliases:["消耗(元)"],agg:"sum",weight:null},
+  {key:"spend_daily",aliases:["日均消耗(元)","有消耗日期日均消耗(元)"],agg:"sum",weight:null},
+  {key:"roi",aliases:["下单ROI"],agg:"wavg",weight:"spend_total"},
+  {key:"price",aliases:["下单单价(元)"],agg:"wavg",weight:"spend_total"},
+  {key:"aigc",aliases:["智投AIGC开启率(%)"],agg:"wavg",weight:"spend_total"},
+  {key:"oneclick",aliases:["使用一键起量的广告占比(%)"],agg:"wavg",weight:"spend_total"},
+  {key:"max30",aliases:["3.0MAX开启率（广告数口径）(%)","3.0MAX开启率(广告数口径)(%)"],agg:"wavg",weight:"spend_total"},
+  {key:"dup_rate",aliases:["有消耗的创意重复度(TID级别)(%)"],agg:"wavg",weight:"spend_total"},
+  {key:"ctr",aliases:["ctr(%)","CTR(%)"],agg:"wavg",weight:"spend_daily"},
+  {key:"skip3s",aliases:["3s快滑率(%)"],agg:"wavg",weight:"spend_daily"},
+  {key:"enter",aliases:["直播漏斗进播率(%)"],agg:"wavg",weight:"spend_daily"},
+  {key:"click",aliases:["直播漏斗商品点击率(%)"],agg:"wavg",weight:"spend_daily"},
+  {key:"order",aliases:["直播漏斗下单率(%)"],agg:"wavg",weight:"spend_daily"},
+];
+// 含这些列的文件是「产品类型/营销对象ID」维度的明细分解文件（比房间粒度更细），
+// 直接用会和房间级数据重复计入，因此只识别不参与聚合，避免数据被夸大失真。
+const BREAKDOWN_COLS=["推广产品库类型","推广产品库类型(翻译后)","营销对象ID","营销对象ID(翻译后)"];
+
+function toNumOrNull(v){
+  if(v===null||v===undefined||v==="")return null;
+  if(v==="~"||v==="∞"||v==="inf")return null;
+  const n=parseFloat(v);
+  return isNaN(n)?null:n;
+}
+function pickAlias(row,aliases){
+  for(const a of aliases){if(row[a]!==undefined)return row[a]}
+  return undefined;
+}
+function getAgentClientRoom(row){
+  return {
+    agent:(row["代理商政策集团"]||row["代理商"]||row["agent"]||"").toString().trim(),
+    client:(row["客户简称"]||row["客户"]||row["client"]||"").toString().trim(),
+    room:(row["视频号名称"]||row["直播间"]||row["room"]||"").toString().trim()
+  };
+}
+function readFileAsRows(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:"array"});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        resolve(XLSX.utils.sheet_to_json(ws,{defval:null}));
+      }catch(err){reject(err)}
+    };
+    reader.onerror=()=>reject(new Error("读取文件失败"));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function handleInfraFiles(ev){
+  const files=Array.from(ev.target.files||[]);
+  if(files.length===0)return;
+  const roomLevel={}; // key: agent|client|room -> {vals:{...}}
+  let usedFiles=0,skippedFiles=0;
+  const fileNames=[];
+  for(const file of files){
+    fileNames.push(file.name);
+    let rows;
+    try{ rows=await readFileAsRows(file) }catch(err){ skippedFiles++; continue }
+    if(!rows||rows.length===0){skippedFiles++;continue}
+    const header=Object.keys(rows.find(r=>r&&Object.keys(r).length>0)||{});
+    if(BREAKDOWN_COLS.some(c=>header.includes(c))){
+      // 明细分解文件：只识别，不计入聚合（见上方说明），避免和房间级数据重复计算
+      continue;
+    }
+    let matched=false;
+    rows.forEach(row=>{
+      const {agent,client,room}=getAgentClientRoom(row);
+      if(!agent||agent==="整体"||!client)return;
+      const key=agent+"|"+client+"|"+room;
+      if(!roomLevel[key])roomLevel[key]={agent,client,room,vals:{}};
+      INFRA_FIELD_DEFS.forEach(fd=>{
+        const num=toNumOrNull(pickAlias(row,fd.aliases));
+        if(num!=null){roomLevel[key].vals[fd.key]=num;matched=true}
+      });
+    });
+    if(matched)usedFiles++;else skippedFiles++;
+  }
+  if(usedFiles===0){
+    alert("这批文件里没有识别出「代理商政策集团/客户简称」等字段，请确认是否为通用分析数据集导出格式");
+    ev.target.value="";return;
+  }
+  // 房间级 → 客户级聚合：sum 字段直接求和；wavg 字段按对应权重字段做加权平均
+  const byClient={};
+  Object.values(roomLevel).forEach(rec=>{
+    const k=rec.agent+"|"+rec.client;
+    if(!byClient[k])byClient[k]={agent:rec.agent,client:rec.client,rooms:[]};
+    byClient[k].rooms.push(rec);
+  });
+  const clientRecords=Object.values(byClient).map(({agent,client,rooms})=>{
+    const out={agent,client,room_count:rooms.length};
+    INFRA_FIELD_DEFS.forEach(fd=>{
+      if(fd.agg==="sum"){
+        const vals=rooms.map(r=>r.vals[fd.key]).filter(v=>v!=null);
+        out[fd.key]=vals.length?vals.reduce((s,v)=>s+v,0):null;
+      }else{
+        let wsum=0,vsum=0,plain=[];
+        rooms.forEach(r=>{
+          const v=r.vals[fd.key];
+          if(v==null)return;
+          plain.push(v);
+          const w=(fd.weight&&r.vals[fd.weight]!=null&&r.vals[fd.weight]>0)?r.vals[fd.weight]:1;
+          wsum+=w;vsum+=w*v;
+        });
+        out[fd.key]=wsum>0?vsum/wsum:(plain.length?plain.reduce((s,v)=>s+v,0)/plain.length:null);
+      }
+    });
+    return out;
+  });
+  const payload={date:new Date().toISOString().slice(0,10),clientRecords,fileNames,updatedAt:new Date().toLocaleString("zh-CN")};
+  localStorage.setItem(INFRA_LS_KEY,JSON.stringify(payload));
+  applyAchRateToAgents();
+  buildScores(AGENTS,loadValueData(currentStage));
+  renderInfra();renderInfraUploadSummary();renderAchRateEditor();
+  alert(`✓ 已自动合并 ${usedFiles} 份文件（跳过明细分解文件 ${skippedFiles} 份），共识别 ${clientRecords.length} 个「代理商×客户」组合`);
+  ev.target.value="";
+}
+function clearInfraData(){
+  if(!confirm("确定清空已上传的运营基建数据？（手填的达标率不受影响）"))return;
+  localStorage.removeItem(INFRA_LS_KEY);
+  renderInfra();renderInfraUploadSummary();
+}
 function getInfraData(){
   const s=localStorage.getItem(INFRA_LS_KEY);
   if(s){try{return JSON.parse(s)}catch(e){}}
   return null;
 }
-function renderInfra(){
+function renderInfraUploadSummary(){
+  const el=document.getElementById("infraUploadSummary");
+  const tag=document.getElementById("infraLastUpload");
   const data=getInfraData();
-  const el=document.getElementById("infraContent");
-  if(!data||!data.records||data.records.length===0){
-    el.innerHTML='<div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">暂无运营基建数据<br/>管理员可通过上方「📤 上传数据」导入</div>';
+  if(!data||!data.clientRecords||data.clientRecords.length===0){
+    if(el)el.textContent="尚未上传运营基建数据";
+    if(tag)tag.textContent="尚未上传";
     return;
   }
-  // 按代理商分组
-  const byAgent={};
-  AGENTS.forEach(a=>{byAgent[a.name]={agent:a,records:[]}});
-  data.records.forEach(r=>{
-    if(byAgent[r.agent])byAgent[r.agent].records.push(r);
-  });
-  let html='<div style="font-size:10px;color:#93a0bd;margin-bottom:8px">数据日期：'+(data.date||"未知")+'</div>';
-  html+='<div style="overflow-x:auto"><table class="ct" style="width:100%"><thead><tr>';
+  if(el)el.innerHTML=`已合并 <b>${data.clientRecords.length}</b> 个代理×客户组合 · 来自 ${(data.fileNames||[]).length} 份文件：${(data.fileNames||[]).join("、")}`;
+  if(tag)tag.textContent=`最后更新：${data.updatedAt||data.date||""}`;
+}
+
+/* ---- 达标率：管理员手填，按客户名持久化，独立于每日 BI 上传 ---- */
+function getAchRateMap(){
+  const s=localStorage.getItem(ACH_RATE_LS_KEY);
+  if(s){try{return JSON.parse(s)}catch(e){}}
+  return {};
+}
+function setAchRate(client,val){
+  const map=getAchRateMap();
+  if(val===""||val==null){delete map[client]}
+  else{map[client]=Math.max(0,Math.min(100,parseFloat(val)||0))}
+  localStorage.setItem(ACH_RATE_LS_KEY,JSON.stringify(map));
+  applyAchRateToAgents();
+  buildScores(AGENTS,loadValueData(currentStage));
+  renderRank();
+  if(currentStage==="infra")renderInfra();
+}
+function applyAchRateToAgents(){
+  const map=getAchRateMap();
+  AGENTS.forEach(a=>a.clients.forEach(c=>{c.infra=map[c.name]!=null?map[c.name]:null}));
+}
+function renderAchRateEditor(){
+  const el=document.getElementById("achRateEditor");
+  if(!el)return;
+  const map=getAchRateMap();
+  const allClients=[...new Set(AGENTS.flatMap(a=>a.clients.map(c=>c.name)))];
+  if(allClients.length===0){el.innerHTML='<div style="color:#a0abc4;font-size:11px">暂无客户</div>';return}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${allClients.map(name=>`
+    <div style="background:#fff;border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px">
+      <span style="font-size:12px;color:#2d3552;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+      <input type="number" min="0" max="100" placeholder="—" value="${map[name]!=null?map[name]:""}" style="width:52px;border:.5px solid #c8d0e0;border-radius:6px;padding:3px 6px;font-size:12px;text-align:center" onchange="setAchRate('${name.replace(/'/g,"\\'")}',this.value)"/>
+    </div>`).join("")}</div>`;
+}
+
+function renderInfra(){
+  const data=getInfraData();
+  const achMap=getAchRateMap();
+  const el=document.getElementById("infraContent");
+  if(!el)return;
+  const byKey={};
+  AGENTS.forEach(a=>a.clients.forEach(c=>{byKey[a.name+"|"+c.name]={agent:a.name,client:c.name}}));
+  if(data&&data.clientRecords){
+    data.clientRecords.forEach(r=>{
+      const k=r.agent+"|"+r.client;
+      if(byKey[k])byKey[k]=Object.assign({},byKey[k],r);
+    });
+  }
+  const rows=Object.values(byKey);
+  if(rows.length===0){
+    el.innerHTML='<div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">暂无运营基建数据<br/>管理员可通过「🔒 管理」面板一次性上传当天的全部 BI 文件</div>';
+    return;
+  }
+  const cell=(v,fmtFn)=>v!=null?fmtFn(v):'<span style="color:#c8d0e0">—</span>';
+  let html='<div style="font-size:10px;color:#93a0bd;margin-bottom:8px">数据日期：'+(data&&data.date||"未知")+' · 达标率为渠道经理手填（暂无官方达标基准与优化建议数据源，故不展示 P0/P1，避免编造）</div>';
+  html+='<div style="overflow-x:auto"><table class="ct" style="width:100%;font-size:11px"><thead><tr>';
   html+='<th style="text-align:left">代理商</th><th style="text-align:left">客户</th>';
-  html+='<th>达标率</th><th>消耗</th><th>ROI</th><th>客单价</th><th>CTR</th><th>3s快滑</th><th>阶段</th><th>P0</th><th>P1</th>';
+  html+='<th>达标率</th><th>消耗合计</th><th>日均消耗</th><th>ROI</th><th>客单价</th><th>CTR</th><th>3s快滑</th><th>进播率</th><th>点击率</th><th>下单率</th>';
   html+='</tr></thead><tbody>';
-  Object.values(byAgent).forEach(({agent,records})=>{
-    if(records.length===0){
-      agent.clients.forEach(c=>{
-        html+=`<tr><td class="cust">${agent.name}</td><td>${c.name}</td><td colspan="9" style="color:#a0abc4;text-align:center">—</td></tr>`;
-      });
-    }else{
-      records.forEach(r=>{
-        const achColor=r.achievementRate>=60?"#3b7a1f":"#d14343";
-        html+=`<tr>
-          <td class="cust">${r.agent}</td><td>${r.client}</td>
-          <td style="font-weight:700;color:${achColor}">${r.achievementRate!=null?r.achievementRate+'%':'—'}</td>
-          <td>${r.spend!=null?r.spend:'—'}</td>
-          <td>${r.roi!=null?r.roi:'—'}</td>
-          <td>${r.aov!=null?'¥'+r.aov:'—'}</td>
-          <td>${r.ctr!=null?r.ctr+'%':'—'}</td>
-          <td>${r.skip3s!=null?r.skip3s+'%':'—'}</td>
-          <td style="font-size:10px">${r.stage||'—'}</td>
-          <td style="color:#d14343;font-weight:600">${r.p0!=null?r.p0:'—'}</td>
-          <td style="color:#e5a419;font-weight:600">${r.p1!=null?r.p1:'—'}</td>
-        </tr>`;
-      });
-    }
+  rows.forEach(r=>{
+    const ach=achMap[r.client];
+    const achColor=ach==null?"#a0abc4":(ach>=60?"#3b7a1f":"#d14343");
+    html+=`<tr>
+      <td class="cust">${r.agent}</td><td>${r.client}</td>
+      <td style="font-weight:700;color:${achColor}">${ach!=null?ach+'%':'—'}</td>
+      <td>${cell(r.spend_total,v=>fmt(v))}</td>
+      <td>${cell(r.spend_daily,v=>fmt(v))}</td>
+      <td>${cell(r.roi,v=>v.toFixed(2))}</td>
+      <td>${cell(r.price,v=>'¥'+Math.round(v))}</td>
+      <td>${cell(r.ctr,v=>v.toFixed(1)+'%')}</td>
+      <td>${cell(r.skip3s,v=>v.toFixed(0)+'%')}</td>
+      <td>${cell(r.enter,v=>v.toFixed(1)+'%')}</td>
+      <td>${cell(r.click,v=>v.toFixed(0)+'%')}</td>
+      <td>${cell(r.order,v=>v.toFixed(1)+'%')}</td>
+    </tr>`;
   });
   html+='</tbody></table></div>';
   el.innerHTML=html;
-}
-function uploadInfraData(ev){
-  const file=ev.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      let records;
-      if(file.name.endsWith(".json")){
-        const j=JSON.parse(e.target.result);
-        records=j.records||j;
-      }else{
-        const wb=XLSX.read(e.target.result,{type:"array"});
-        const ws=wb.Sheets[wb.SheetNames[0]];
-        const rows=XLSX.utils.sheet_to_json(ws,{defval:null});
-        records=rows.map(r=>({
-          agent:r["代理商"]||r["agency"]||"",
-          client:r["客户"]||r["client"]||"",
-          achievementRate:r["达标率"]!=null?parseFloat(r["达标率"]):r["达标率(%)"]!=null?parseFloat(r["达标率(%)"]):null,
-          spend:r["消耗"]||r["spend"]||null,
-          roi:r["ROI"]||r["roi"]||null,
-          aov:r["客单价"]||r["aov"]||null,
-          ctr:r["CTR"]||r["ctr"]||null,
-          skip3s:r["3s快滑"]||r["skip3s"]||null,
-          stage:r["阶段"]||r["stage"]||null,
-          p0:r["P0"]||r["p0"]||null,
-          p1:r["P1"]||r["p1"]||null,
-        }));
-      }
-      const payload={date:new Date().toISOString().slice(0,10),records};
-      localStorage.setItem(INFRA_LS_KEY,JSON.stringify(payload));
-      // 同时把达标率填到 AGENTS.clients[].infra
-      records.forEach(r=>{
-        const ag=AGENTS.find(a=>a.name===r.agent);
-        if(ag){
-          const cl=ag.clients.find(c=>c.name===r.client);
-          if(cl&&r.achievementRate!=null)cl.infra=r.achievementRate;
-        }
-      });
-      buildScores(AGENTS,loadValueData(currentStage));
-      renderInfra();
-      alert(`✓ 运营基建数据上传成功！${records.length} 条记录`);
-    }catch(err){alert("解析失败："+err.message)}
-    ev.target.value="";
-  };
-  if(file.name.endsWith(".json"))reader.readAsText(file);else reader.readAsArrayBuffer(file);
 }
 
 /* ============ 倒计时 + 时间轴动态渲染 ============ */
