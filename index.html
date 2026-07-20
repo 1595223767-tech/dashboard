@@ -61,7 +61,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .stat-card .label{font-size:11px;color:#93a0bd;margin-top:2px}
 .rule-banner{background:linear-gradient(90deg,#4d7cff 0%,#7061e0 50%,#00c6a7 100%);color:#fff;border-radius:12px;padding:12px 16px;font-size:12px;text-align:center;margin-bottom:16px;line-height:1.5;box-shadow:var(--card-shadow)}
 .rule-banner b{font-weight:700}
-.tabs{background:#fff;border-radius:12px;padding:4px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:12px;box-shadow:var(--card-shadow)}
+.tabs{background:#fff;border-radius:12px;padding:4px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 8px 1fr;gap:0;margin-bottom:12px;box-shadow:var(--card-shadow);align-items:center}
 .tab{padding:10px 8px;border-radius:8px;font-size:13px;text-align:center;color:#6b7898;cursor:pointer;transition:all .2s;position:relative}
 .tab.active{background:linear-gradient(90deg,#4d7cff,#00c6a7);color:#fff;font-weight:600}
 .rank-head{display:grid;grid-template-columns:40px 1.4fr 54px 54px 54px 54px 46px;gap:6px;padding:8px 12px;font-size:11px;color:#93a0bd;background:#f4f6fc;border-radius:8px;margin-bottom:6px;align-items:center}
@@ -198,11 +198,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
   <div class="stats" id="kpiRow"></div>
   <div class="tabs" id="stageTabs">
     <div class="tab active" data-stage="total" onclick="switchStage(this)">🏅 总榜</div>
-    <div class="tab" data-stage="infra" onclick="switchStage(this)">🔧 运营基建</div>
     <div class="tab" data-stage="w1" onclick="switchStage(this)">第 1 周</div>
     <div class="tab" data-stage="w2" onclick="switchStage(this)">第 2 周</div>
     <div class="tab" data-stage="w3" onclick="switchStage(this)">第 3 周</div>
+    <div style="border-left:1px solid #e5eaf5"></div>
+    <div class="tab" data-stage="infra" onclick="switchStage(this)">🔧 运营基建</div>
   </div>
+  <div id="infraPanel" style="display:none">
+    <div class="section">
+      <h3>
+        <span class="left">运营基建详情</span>
+        <span class="actions" style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:11px;color:#93a0bd">📅 数据日期</span>
+          <select id="infraDate" style="border:.5px solid #c8d0e0;background:#fff;border-radius:6px;padding:4px 8px;font-size:11px;color:#2d3552" onchange="renderInfra()">
+            <option value="latest">最新</option>
+          </select>
+          <a id="biLink" class="mini-btn" onclick="window.open('','_blank')" style="font-size:10px">📊 BI 取数</a>
+          <button class="mini-btn" onclick="location.reload()">🔄 重新加载</button>
+          <button class="mini-btn primary admin-only" style="display:none" onclick="document.getElementById('infraUpload').click()">📤 上传数据</button>
+          <input type="file" id="infraUpload" accept=".xlsx,.xls,.csv,.json" style="display:none" onchange="uploadInfraData(event)"/>
+          <button class="mini-btn admin-only" style="display:none" onclick="toggleAdminPanel()">📋 管理</button>
+        </span>
+      </h3>
+      <div id="infraContent">
+        <div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">暂无运营基建数据，管理员可通过上方「📤 上传数据」导入<br/><span style="font-size:10px">数据来源：<a style="color:#4d7cff;cursor:pointer" id="biLinkText">BI 取数链接</a></span></div>
+      </div>
+    </div>
+  </div>
+  <div id="rankPanel">
   <div class="section">
     <h3>
       <span class="left">代理商实时排行榜 <span class="sub" id="stageLabel">· 总榜</span></span>
@@ -222,6 +245,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
     </div>
     <div id="rankList"></div>
   </div>
+  </div><!-- end rankPanel -->
   <div class="rule-banner" style="margin-top:8px">📊 <b>综合分 100</b> = 客户分 70（榜单均分 30 + 运营基建 40）+ 代理协同 30（报名数 10 + 拓展数 10 + 配合度 10）</div>
   <div class="footer-note">数据每日 13:00 自动同步 · © 腾讯营销</div>
 </div>
@@ -428,14 +452,12 @@ function clientTableHtml(a){
   const avg=scores.length?(scores.reduce((s,x)=>s+x,0)/scores.length).toFixed(1):"—";
   const infraVals=cs.map(c=>c.infra).filter(s=>s!=null&&s>=0);
   const infraAvg=infraVals.length?(infraVals.reduce((s,x)=>s+x,0)/infraVals.length).toFixed(0)+'%':'—';
-  const cell=v=>v!=null&&v>=0?`<span style="color:#4d7cff;font-weight:600">${v}</span>`:'<span style="color:#a0abc4">—</span>';
   return `<table>
     <thead>
       <tr>
         <th style="text-align:left">客户</th>
         <th>榜单分</th>
         <th>基建达标率</th>
-        <th colspan="3" style="font-size:10px;border-left:1px solid #e5eaf5">人 / 货 / 场</th>
         <th>详情</th>
       </tr>
     </thead>
@@ -447,13 +469,10 @@ function clientTableHtml(a){
         <td class="cust">${c.name}</td>
         <td style="font-weight:${has?'700':'400'};color:${has?'#4d7cff':'#a0abc4'};font-size:${has?'13px':'11px'}">${scoreStr}</td>
         <td style="font-weight:600;color:${c.infra!=null&&c.infra>=60?'#3b7a1f':c.infra!=null?'#d14343':'#a0abc4'}">${infraStr}</td>
-        <td>${cell(c.people)}</td>
-        <td>${cell(c.goods)}</td>
-        <td>${cell(c.venue)}</td>
         <td><a class="link-out" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">看板↗</a></td>
       </tr>`;
     }).join("")}
-    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td style="font-weight:700;color:#3b7a1f">${infraAvg}</td><td colspan="4" style="text-align:left;color:#93a0bd;font-size:10px">共 ${cs.length} 家客户</td></tr>
+    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td style="font-weight:700;color:#3b7a1f">${infraAvg}</td><td style="color:#93a0bd;font-size:10px">共 ${cs.length} 家</td></tr>
     </tbody></table>`;
 }
 let openIdx=-1;
@@ -463,7 +482,23 @@ function toggleDrawer(i){
   if(openIdx>=0)document.getElementById("drawer-"+openIdx).classList.remove("open");
   d.classList.add("open");openIdx=i;
 }
-function switchStage(el){document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");currentStage=el.dataset.stage;openIdx=-1;refresh()}
+function switchStage(el){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  currentStage=el.dataset.stage;
+  openIdx=-1;
+  if(currentStage==="infra"){
+    document.getElementById("rankPanel").style.display="none";
+    document.getElementById("infraPanel").style.display="block";
+    // 管理员才显示上传/管理按钮
+    document.querySelectorAll(".admin-only").forEach(b=>b.style.display=isAdmin?"inline-block":"none");
+    renderInfra();
+  }else{
+    document.getElementById("rankPanel").style.display="block";
+    document.getElementById("infraPanel").style.display="none";
+    refresh();
+  }
+}
 function switchPolicy(){/* removed */}
 function fillTopPolicies(){/* removed - 政策墙已删除 */}
 function renderAgentSelect(){/* removed */}
@@ -678,6 +713,104 @@ async function shotLongImg(){
   if(wasOpen>=0){document.getElementById("drawer-"+wasOpen)?.classList.add("open");openIdx=wasOpen}else{openIdx=-1}
 }
 async function shotFullDashboard(){return shotLongImg()}
+
+/* ============ 运营基建 Tab ============ */
+const INFRA_LS_KEY="agent_infra_data";
+let INFRA_BI_LINK=""; // 由管理员设置
+function getInfraData(){
+  const s=localStorage.getItem(INFRA_LS_KEY);
+  if(s){try{return JSON.parse(s)}catch(e){}}
+  return null;
+}
+function renderInfra(){
+  const data=getInfraData();
+  const el=document.getElementById("infraContent");
+  if(!data||!data.records||data.records.length===0){
+    el.innerHTML='<div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">暂无运营基建数据<br/>管理员可通过上方「📤 上传数据」导入</div>';
+    return;
+  }
+  // 按代理商分组
+  const byAgent={};
+  AGENTS.forEach(a=>{byAgent[a.name]={agent:a,records:[]}});
+  data.records.forEach(r=>{
+    if(byAgent[r.agent])byAgent[r.agent].records.push(r);
+  });
+  let html='<div style="font-size:10px;color:#93a0bd;margin-bottom:8px">数据日期：'+(data.date||"未知")+'</div>';
+  html+='<div style="overflow-x:auto"><table class="ct" style="width:100%"><thead><tr>';
+  html+='<th style="text-align:left">代理商</th><th style="text-align:left">客户</th>';
+  html+='<th>达标率</th><th>消耗</th><th>ROI</th><th>客单价</th><th>CTR</th><th>3s快滑</th><th>阶段</th><th>P0</th><th>P1</th>';
+  html+='</tr></thead><tbody>';
+  Object.values(byAgent).forEach(({agent,records})=>{
+    if(records.length===0){
+      agent.clients.forEach(c=>{
+        html+=`<tr><td class="cust">${agent.name}</td><td>${c.name}</td><td colspan="9" style="color:#a0abc4;text-align:center">—</td></tr>`;
+      });
+    }else{
+      records.forEach(r=>{
+        const achColor=r.achievementRate>=60?"#3b7a1f":"#d14343";
+        html+=`<tr>
+          <td class="cust">${r.agent}</td><td>${r.client}</td>
+          <td style="font-weight:700;color:${achColor}">${r.achievementRate!=null?r.achievementRate+'%':'—'}</td>
+          <td>${r.spend!=null?r.spend:'—'}</td>
+          <td>${r.roi!=null?r.roi:'—'}</td>
+          <td>${r.aov!=null?'¥'+r.aov:'—'}</td>
+          <td>${r.ctr!=null?r.ctr+'%':'—'}</td>
+          <td>${r.skip3s!=null?r.skip3s+'%':'—'}</td>
+          <td style="font-size:10px">${r.stage||'—'}</td>
+          <td style="color:#d14343;font-weight:600">${r.p0!=null?r.p0:'—'}</td>
+          <td style="color:#e5a419;font-weight:600">${r.p1!=null?r.p1:'—'}</td>
+        </tr>`;
+      });
+    }
+  });
+  html+='</tbody></table></div>';
+  el.innerHTML=html;
+}
+function uploadInfraData(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      let records;
+      if(file.name.endsWith(".json")){
+        const j=JSON.parse(e.target.result);
+        records=j.records||j;
+      }else{
+        const wb=XLSX.read(e.target.result,{type:"array"});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{defval:null});
+        records=rows.map(r=>({
+          agent:r["代理商"]||r["agency"]||"",
+          client:r["客户"]||r["client"]||"",
+          achievementRate:r["达标率"]!=null?parseFloat(r["达标率"]):r["达标率(%)"]!=null?parseFloat(r["达标率(%)"]):null,
+          spend:r["消耗"]||r["spend"]||null,
+          roi:r["ROI"]||r["roi"]||null,
+          aov:r["客单价"]||r["aov"]||null,
+          ctr:r["CTR"]||r["ctr"]||null,
+          skip3s:r["3s快滑"]||r["skip3s"]||null,
+          stage:r["阶段"]||r["stage"]||null,
+          p0:r["P0"]||r["p0"]||null,
+          p1:r["P1"]||r["p1"]||null,
+        }));
+      }
+      const payload={date:new Date().toISOString().slice(0,10),records};
+      localStorage.setItem(INFRA_LS_KEY,JSON.stringify(payload));
+      // 同时把达标率填到 AGENTS.clients[].infra
+      records.forEach(r=>{
+        const ag=AGENTS.find(a=>a.name===r.agent);
+        if(ag){
+          const cl=ag.clients.find(c=>c.name===r.client);
+          if(cl&&r.achievementRate!=null)cl.infra=r.achievementRate;
+        }
+      });
+      buildScores(AGENTS,loadValueData(currentStage));
+      renderInfra();
+      alert(`✓ 运营基建数据上传成功！${records.length} 条记录`);
+    }catch(err){alert("解析失败："+err.message)}
+    ev.target.value="";
+  };
+  if(file.name.endsWith(".json"))reader.readAsText(file);else reader.readAsArrayBuffer(file);
+}
 
 /* ============ 倒计时 + 时间轴动态渲染 ============ */
 const CONTEST_STAGES=[
