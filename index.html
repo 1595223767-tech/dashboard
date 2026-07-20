@@ -64,8 +64,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .tabs{background:#fff;border-radius:12px;padding:4px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:12px;box-shadow:var(--card-shadow)}
 .tab{padding:10px 8px;border-radius:8px;font-size:13px;text-align:center;color:#6b7898;cursor:pointer;transition:all .2s;position:relative}
 .tab.active{background:linear-gradient(90deg,#4d7cff,#00c6a7);color:#fff;font-weight:600}
-.rank-head{display:grid;grid-template-columns:40px 1.4fr 60px 60px 54px 60px 60px 46px;gap:6px;padding:8px 12px;font-size:11px;color:#93a0bd;background:#f4f6fc;border-radius:8px;margin-bottom:6px;align-items:center}
-.rank-row{display:grid;grid-template-columns:40px 1.4fr 60px 60px 54px 60px 60px 46px;gap:6px;padding:11px 12px;font-size:13px;align-items:center;border-radius:10px;cursor:pointer;transition:all .2s;background:#fff;border:.5px solid transparent}
+.rank-head{display:grid;grid-template-columns:40px 1.4fr 54px 54px 54px 54px 46px;gap:6px;padding:8px 12px;font-size:11px;color:#93a0bd;background:#f4f6fc;border-radius:8px;margin-bottom:6px;align-items:center}
+.rank-row{display:grid;grid-template-columns:40px 1.4fr 54px 54px 54px 54px 46px;gap:6px;padding:11px 12px;font-size:13px;align-items:center;border-radius:10px;cursor:pointer;transition:all .2s;background:#fff;border:.5px solid transparent}
 .rank-row:hover{background:#f4f6fc}
 .rank-row.top1{background:linear-gradient(90deg,#fff5db 0%,#fffbea 100%);border-color:#ffcf5c}
 .rank-row.top2{background:linear-gradient(90deg,#eef3fa 0%,#f7faff 100%);border-color:#c0d3e8}
@@ -179,7 +179,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 <div class="container">
   <div class="header">
     <h1>🚀 美好生活月 · 代理商打榜赛</h1>
-    <div class="subtitle">腾讯营销 · 消电日百 &nbsp;|&nbsp; 2026.7.20 → 8.20</div>
+    <div class="subtitle">腾讯营销 · 消电日百 &nbsp;|&nbsp; 2026.7.20 → 8.9</div>
     <div class="top-actions">
       <button class="top-btn" onclick="shotLongImg()">📸 生成长图</button>
       <a class="top-btn" href="http://1.14.143.207/peipei-mhshj/" target="_blank">↗ 客户榜</a>
@@ -198,6 +198,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
   <div class="stats" id="kpiRow"></div>
   <div class="tabs" id="stageTabs">
     <div class="tab active" data-stage="total" onclick="switchStage(this)">🏅 总榜</div>
+    <div class="tab" data-stage="infra" onclick="switchStage(this)">🔧 运营基建</div>
     <div class="tab" data-stage="w1" onclick="switchStage(this)">第 1 周</div>
     <div class="tab" data-stage="w2" onclick="switchStage(this)">第 2 周</div>
     <div class="tab" data-stage="w3" onclick="switchStage(this)">第 3 周</div>
@@ -208,20 +209,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
       <span class="actions"><button class="mini-btn" onclick="shotLongImg()">📸 生成排行长图</button></span>
     </h3>
     <div class="data-source" id="dataSourceTip">
-      <span>📊 <b>客户分 70</b>：<span style="color:#a0abc4">待客户榜开赛（7/20）</span> · <b>代理协同 30</b>：<span id="mockStatus">比赛结束后统一上传</span></span>
+      <span>📊 <b>客户分 70</b> = 榜单均分 30 + 运营基建 40 · <b>代理协同 30</b>：<span id="mockStatus">比赛结束后上传</span></span>
       <a onclick="window.open('http://1.14.143.207/peipei-mhshj/','_blank')">查看客户运营指标看板 ↗</a>
     </div>
     <div class="rank-head">
       <div style="text-align:center">名次</div><div>代理商</div>
       <div style="text-align:center">综合分</div>
-      <div style="text-align:center">客户分</div>
+      <div style="text-align:center">榜单分</div>
+      <div style="text-align:center">基建分</div>
       <div style="text-align:center">协同分</div>
-      <div style="text-align:center">客户平均</div>
       <div style="text-align:center">名下客户</div><div></div>
     </div>
     <div id="rankList"></div>
   </div>
-  <div class="rule-banner" style="margin-top:8px">📊 <b>综合分 100</b> = 客户分 70（名下客户在客户榜的平均分）+ 代理协同分 30（带动客户报名数 10 + 新客拓展数 10 + 比赛配合度 10）</div>
+  <div class="rule-banner" style="margin-top:8px">📊 <b>综合分 100</b> = 客户分 70（榜单均分 30 + 运营基建 40）+ 代理协同 30（报名数 10 + 拓展数 10 + 配合度 10）</div>
   <div class="footer-note">数据每日 13:00 自动同步 · © 腾讯营销</div>
 </div>
 <div class="modal" id="loginModal">
@@ -260,9 +261,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 <div class="hidden-shot" id="shotHolder"></div>
 <script>
 const CLIENT_DASH_PROCESS={"开域国际":{"room_count":5,"spend_total":312.77,"achievement_rate":67.0,"stage_dist":{"cold":5},"metrics":{"qyt":0.0,"zt":80.0,"allsel":80.0,"four_m":100.0,"prod_aggr":0.0,"pk_youtou":20.0,"aigc":100.0,"max30":0,"oneclick":0,"cnt_per_acct":33.84,"ad_per_acct":6.37,"dup_rate":38.48,"acct_cnt":2.79,"ctr":4.51,"skip3s":70.04,"enter":2.25,"click":42.9,"order":6.67}},"疾风文化":{"room_count":4,"spend_total":4162.47,"achievement_rate":39.7,"stage_dist":{"leap":3,"cold":1},"metrics":{"qyt":50.0,"zt":25.0,"allsel":25.0,"four_m":25.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":100.0,"max30":11.34,"oneclick":34.28,"cnt_per_acct":8.49,"ad_per_acct":4.7,"dup_rate":21.31,"acct_cnt":2.66,"ctr":1.86,"skip3s":59.06,"enter":1.37,"click":57.79,"order":21.38}},"深圳响当当":{"room_count":1,"spend_total":0,"achievement_rate":0,"stage_dist":{"cold":1},"metrics":{"qyt":0.0,"zt":0.0,"allsel":0.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":0,"max30":0,"oneclick":0,"cnt_per_acct":0,"ad_per_acct":0,"dup_rate":0,"acct_cnt":0.0,"ctr":0,"skip3s":0,"enter":0,"click":0,"order":0}},"上海亦芯":{"room_count":5,"spend_total":12658.38,"achievement_rate":55.5,"stage_dist":{"leap":2,"cold":3},"metrics":{"qyt":20.0,"zt":60.0,"allsel":60.0,"four_m":80.0,"prod_aggr":0.0,"pk_youtou":20.0,"aigc":74.08,"max30":0.49,"oneclick":11.78,"cnt_per_acct":138.8,"ad_per_acct":19.24,"dup_rate":39.59,"acct_cnt":2.52,"ctr":3.42,"skip3s":66.64,"enter":1.45,"click":66.87,"order":5.45}},"十三邀":{"room_count":2,"spend_total":4253.25,"achievement_rate":62.9,"stage_dist":{"leap":1,"cold":1},"metrics":{"qyt":50.0,"zt":50.0,"allsel":50.0,"four_m":50.0,"prod_aggr":50.0,"pk_youtou":0.0,"aigc":100.0,"max30":50.11,"oneclick":99.77,"cnt_per_acct":114.45,"ad_per_acct":32.63,"dup_rate":45.79,"acct_cnt":3.0,"ctr":2.89,"skip3s":87.83,"enter":2.62,"click":6.39,"order":8.25}},"厚拓科技":{"room_count":22,"spend_total":167556.5,"achievement_rate":43.2,"stage_dist":{"head":5,"leap":3,"cold":14},"metrics":{"qyt":13.6,"zt":50.0,"allsel":50.0,"four_m":18.2,"prod_aggr":0.0,"pk_youtou":18.2,"aigc":75.33,"max30":61.18,"oneclick":56.45,"cnt_per_acct":45.31,"ad_per_acct":10.36,"dup_rate":39.5,"acct_cnt":4.21,"ctr":2.08,"skip3s":59.41,"enter":1.37,"click":68.1,"order":9.14}},"厦门众联":{"room_count":2,"spend_total":5410.01,"achievement_rate":63.2,"stage_dist":{"leap":1,"cold":1},"metrics":{"qyt":0.0,"zt":100.0,"allsel":100.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":100.0,"aigc":100.0,"max30":100.0,"oneclick":0.0,"cnt_per_acct":160.74,"ad_per_acct":18.41,"dup_rate":40.88,"acct_cnt":2.0,"ctr":3.31,"skip3s":63.94,"enter":2.53,"click":52.4,"order":9.19}},"广州晨曦":{"room_count":20,"spend_total":40950.99,"achievement_rate":46.6,"stage_dist":{"head":2,"leap":4,"cold":14},"metrics":{"qyt":15.0,"zt":50.0,"allsel":50.0,"four_m":40.0,"prod_aggr":5.0,"pk_youtou":40.0,"aigc":62.09,"max30":96.83,"oneclick":19.41,"cnt_per_acct":76.17,"ad_per_acct":17.16,"dup_rate":36.07,"acct_cnt":3.56,"ctr":2.96,"skip3s":58.17,"enter":1.87,"click":67.46,"order":6.28}},"渠网在线":{"room_count":3,"spend_total":2659.81,"achievement_rate":33.3,"stage_dist":{"leap":1,"cold":2},"metrics":{"qyt":0.0,"zt":33.3,"allsel":33.3,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":100.0,"max30":47.24,"oneclick":0.0,"cnt_per_acct":17.55,"ad_per_acct":3.71,"dup_rate":11.47,"acct_cnt":7.47,"ctr":3.37,"skip3s":68.11,"enter":2.09,"click":41.07,"order":5.78}},"微盟":{"room_count":13,"spend_total":37955.62,"achievement_rate":38.9,"stage_dist":{"head":1,"leap":5,"cold":7},"metrics":{"qyt":7.7,"zt":30.8,"allsel":30.8,"four_m":7.7,"prod_aggr":7.7,"pk_youtou":30.8,"aigc":91.39,"max30":50.28,"oneclick":0.0,"cnt_per_acct":53.2,"ad_per_acct":10.17,"dup_rate":22.8,"acct_cnt":2.38,"ctr":1.97,"skip3s":63.66,"enter":1.28,"click":64.01,"order":3.81}},"北京众赢":{"room_count":8,"spend_total":14393.43,"achievement_rate":36.6,"stage_dist":{"leap":4,"cold":4},"metrics":{"qyt":12.5,"zt":50.0,"allsel":50.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":67.52,"max30":48.95,"oneclick":23.7,"cnt_per_acct":16.24,"ad_per_acct":4.9,"dup_rate":17.67,"acct_cnt":3.63,"ctr":2.16,"skip3s":67.13,"enter":1.81,"click":63.2,"order":12.26}},"卓鹅":{"room_count":1,"spend_total":6844.28,"achievement_rate":44.0,"stage_dist":{"leap":1},"metrics":{"qyt":0.0,"zt":0.0,"allsel":0.0,"four_m":0.0,"prod_aggr":0.0,"pk_youtou":0.0,"aigc":0,"max30":20.0,"oneclick":20.0,"cnt_per_acct":22.0,"ad_per_acct":5.0,"dup_rate":16.2,"acct_cnt":1.0,"ctr":3.77,"skip3s":63.6,"enter":3.1,"click":65.9,"order":12.99}},"小牛传媒":{"room_count":17,"spend_total":47798.5,"achievement_rate":54.5,"stage_dist":{"head":1,"leap":8,"cold":8},"metrics":{"qyt":23.5,"zt":58.8,"allsel":58.8,"four_m":5.9,"prod_aggr":0.0,"pk_youtou":52.9,"aigc":93.18,"max30":53.11,"oneclick":36.58,"cnt_per_acct":122.14,"ad_per_acct":18.78,"dup_rate":37.04,"acct_cnt":3.19,"ctr":2.68,"skip3s":46.71,"enter":2.0,"click":59.83,"order":10.84}}};
-const RAW_DATA=[{"name":"疾风文化","client_cnt":1,"clients":[{"name":"宝家洁","score":null}],"industries":[]},{"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":null}],"industries":[]},{"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":null}],"industries":[]},{"name":"厚拓科技","client_cnt":4,"clients":[{"name":"太力","score":null},{"name":"上海成事好物","score":null},{"name":"迈巴勒","score":null},{"name":"徕芬","score":null}],"industries":[]},{"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":null},{"name":"太力","score":null},{"name":"上海成事好物","score":null}],"industries":[]},{"name":"蓝橘传媒","client_cnt":3,"clients":[{"name":"宝家洁","score":null},{"name":"梦创","score":null},{"name":"好太太","score":null}],"industries":[]},{"name":"上海亦芯","client_cnt":2,"clients":[{"name":"上海成事好物","score":null},{"name":"友望","score":null}],"industries":[]},{"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null}],"industries":[]},{"name":"广州晨曦","client_cnt":1,"clients":[{"name":"友望","score":null}],"industries":[]}];
-const STAGES=["total","w1","w2","w3"];
-const STAGE_LABEL={total:"总榜",w1:"第 1 周",w2:"第 2 周",w3:"第 3 周"};
+const RAW_DATA=[{"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":null,"infra":null}],"industries":[]},{"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":null,"infra":null}],"industries":[]},{"name":"厚拓科技","client_cnt":1,"clients":[{"name":"迈巴勒","score":null,"infra":null}],"industries":[]},{"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":null,"infra":null},{"name":"太力","score":null,"infra":null},{"name":"上海成事好物","score":null,"infra":null}],"industries":[]},{"name":"蓝橘传媒","client_cnt":1,"clients":[{"name":"宝家洁","score":null,"infra":null}],"industries":[]},{"name":"上海亦芯","client_cnt":2,"clients":[{"name":"上海成事好物","score":null,"infra":null},{"name":"友望","score":null,"infra":null}],"industries":[]},{"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null,"infra":null}],"industries":[]},{"name":"广州晨曦","client_cnt":1,"clients":[{"name":"友望","score":null,"infra":null}],"industries":[]}];
+const STAGES=["total","infra","w1","w2","w3"];
+const STAGE_LABEL={total:"总榜",infra:"运营基建",w1:"第 1 周",w2:"第 2 周",w3:"第 3 周"};
 // 客户榜积分（人货场维度累加分）— 每天从 http://1.14.143.207/peipei-mhshj/ 同步一次
 // 结构：{ 代理商名: { total_score: 总积分, clients: [{name, score, breakdown}], synced_at } }
 // 7/20 客户榜开赛前保持空对象，评分自动为 0
@@ -294,42 +295,35 @@ function buildScores(data,valueData){
   const valueMap={};
   if(valueData){valueData.forEach(v=>{valueMap[v.name]=v})}
   data.forEach(a=>{
-    // 兼容防御
     if(!a.clients)a.clients=[];
     if(a.client_cnt==null)a.client_cnt=a.clients.length;
-    // ===== 数据分（已废弃，兼容占位）=====
-    a.r=0;a.r_cost_chg=0;a.r_price_chg=0;a.r_cost=0;
-    a.p_total_cost=a.p_avg_cost_chg=a.p_avg_price=a.p_avg_price_chg=0;
 
-    // ===== 客户分 70（p）=====
-    // 代理级 = 名下所有客户在客户榜的分数【平均值】 × 0.7
-    // 优先从 clients[].score 直接算（每日刷新只需更新 clients 数组的 score）
-    // 兼容 CLIENT_LB_SCORES 全局对象
+    // ===== 客户分 70 = 榜单均分 30 + 运营基建 40 =====
+    // (A) 榜单均分 30：名下客户在客户榜的平均分（0-100）× 0.3
     const clientScores=(a.clients||[]).map(c=>c.score).filter(s=>s!=null&&s>=0);
     if(clientScores.length>0){
       const avg=clientScores.reduce((s,x)=>s+x,0)/clientScores.length;
-      a.p_client_avg=Math.round(avg*100)/100;
-      a.p=Math.round(avg*0.7*10)/10;
+      a.p_rank_avg=Math.round(avg*100)/100;
+      a.p_rank=Math.round(avg*0.3*10)/10; // 满分 30
       a.hasClientScore=true;
-      a.scoredClientCnt=clientScores.length;
     }else{
-      const cs=CLIENT_LB_SCORES[a.name];
-      if(cs && cs.avg_score!=null){
-        a.p_client_avg=Math.round(cs.avg_score*100)/100;
-        a.p=Math.round(cs.avg_score*0.7*10)/10;
-        a.hasClientScore=true;
-        a.scoredClientCnt=(cs.clients||[]).length;
-      }else{
-        a.p_client_avg=0;
-        a.p=0;
-        a.hasClientScore=false;
-        a.scoredClientCnt=0;
-      }
+      a.p_rank_avg=0;a.p_rank=0;a.hasClientScore=false;
     }
+    // (B) 运营基建 40：名下客户达标率均值（0-100）× 0.4
+    const infraScores=(a.clients||[]).map(c=>c.infra).filter(s=>s!=null&&s>=0);
+    if(infraScores.length>0){
+      const avg=infraScores.reduce((s,x)=>s+x,0)/infraScores.length;
+      a.p_infra_avg=Math.round(avg*100)/100;
+      a.p_infra=Math.round(avg*0.4*10)/10; // 满分 40
+      a.hasInfra=true;
+    }else{
+      a.p_infra_avg=0;a.p_infra=0;a.hasInfra=false;
+    }
+    a.p=Math.round((a.p_rank+a.p_infra)*10)/10; // 客户分合计（0-70）
+    a.p_client_avg=a.p_rank_avg; // 兼容旧代码
 
-    // ===== 代理协同 30（v）=====
+    // ===== 代理协同 30 =====
     // 带动客户报名数、新客拓展数、比赛配合度 各 10 分
-    // 用户填的 0-100 数字 → × 0.1 = 0-10 分
     const vd=valueMap[a.name];
     if(vd){
       a.v_signup=Math.round((vd.signup_clients||0)*0.1*10)/10;
@@ -342,7 +336,7 @@ function buildScores(data,valueData){
       a.v=0;
       a.hasRealValue=false;
     }
-    a.c=0;
+    a.c=0;a.r=0;
     a.total=Math.round((a.p+a.v)*10)/10;
     a.disabled=false;
   });
@@ -408,9 +402,9 @@ function renderRank(){
         </div>
       </div>
       <div class="total-cell">${a.total}</div>
-      <div class="sub-cell" style="font-weight:600;color:${a.hasClientScore?'#4d7cff':'#a0abc4'}">${a.p||"—"}<span class="u">/70</span></div>
+      <div class="sub-cell" style="font-weight:600;color:${a.hasClientScore?'#4d7cff':'#a0abc4'}">${a.p_rank||"—"}<span class="u">/30</span></div>
+      <div class="sub-cell" style="font-weight:600;color:${a.hasInfra?'#3b7a1f':'#a0abc4'}">${a.p_infra||"—"}<span class="u">/40</span></div>
       <div class="sub-cell" style="font-weight:600;color:${a.hasRealValue?'#00c6a7':'#a0abc4'}">${a.v||"—"}<span class="u">/30</span></div>
-      <div class="sub-cell" style="color:${a.hasClientScore?'#5c6a8c':'#a0abc4'}">${a.hasClientScore?a.p_client_avg.toFixed(1):"—"}</div>
       <div class="sub-cell">${a.client_cnt}</div>
       <div style="text-align:right"><button class="exp-btn" onclick="event.stopPropagation();toggleDrawer(${i})">展开</button></div>
     </div>
@@ -418,8 +412,8 @@ function renderRank(){
       <div class="drawer-inner" style="grid-template-columns:1fr">
         <div>
           <h4>
-            <span>名下客户 · ${a.client_cnt} 家 &nbsp;<span style="color:#93a0bd;font-weight:400;font-size:10px">（客户分 ${a.p}/70 · 协同 ${a.v}/30 · 综合 ${a.total}）</span></span>
-            <a class="link" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">客户榜 ↗</a>
+            <span>名下客户 · ${a.client_cnt} 家 &nbsp;<span style="color:#93a0bd;font-weight:400;font-size:10px">（榜单分 ${a.p_rank}/30 · 基建分 ${a.p_infra}/40 · 协同 ${a.v}/30 · 综合 ${a.total}）</span></span>
+            <span style="display:flex;gap:6px"><a class="link" onclick="shotOneAgent(${i})">📸 截图</a><a class="link" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">客户榜 ↗</a></span>
           </h4>
           <div class="ct">${clientTableHtml(a)}</div>
         </div>
@@ -432,34 +426,34 @@ function clientTableHtml(a){
   if(cs.length===0)return '<div style="padding:20px;text-align:center;color:#a0abc4;font-size:11px">暂无客户数据</div>';
   const scores=cs.map(c=>c.score).filter(s=>s!=null&&s>=0);
   const avg=scores.length?(scores.reduce((s,x)=>s+x,0)/scores.length).toFixed(1):"—";
+  const infraVals=cs.map(c=>c.infra).filter(s=>s!=null&&s>=0);
+  const infraAvg=infraVals.length?(infraVals.reduce((s,x)=>s+x,0)/infraVals.length).toFixed(0)+'%':'—';
   const cell=v=>v!=null&&v>=0?`<span style="color:#4d7cff;font-weight:600">${v}</span>`:'<span style="color:#a0abc4">—</span>';
   return `<table>
     <thead>
       <tr>
-        <th style="text-align:left" rowspan="2">客户</th>
-        <th rowspan="2">客户榜<br/>综合分</th>
-        <th colspan="3" style="border-bottom:1px solid #e5eaf5">状态（人 / 货 / 场）</th>
-        <th rowspan="2">详情</th>
-      </tr>
-      <tr>
-        <th style="font-size:10px">人</th>
-        <th style="font-size:10px">货</th>
-        <th style="font-size:10px">场</th>
+        <th style="text-align:left">客户</th>
+        <th>榜单分</th>
+        <th>基建达标率</th>
+        <th colspan="3" style="font-size:10px;border-left:1px solid #e5eaf5">人 / 货 / 场</th>
+        <th>详情</th>
       </tr>
     </thead>
     <tbody>${cs.map(c=>{
       const has=c.score!=null&&c.score>=0;
       const scoreStr=has?c.score.toFixed(1):"—";
+      const infraStr=c.infra!=null&&c.infra>=0?c.infra+'%':'—';
       return `<tr>
         <td class="cust">${c.name}</td>
         <td style="font-weight:${has?'700':'400'};color:${has?'#4d7cff':'#a0abc4'};font-size:${has?'13px':'11px'}">${scoreStr}</td>
+        <td style="font-weight:600;color:${c.infra!=null&&c.infra>=60?'#3b7a1f':c.infra!=null?'#d14343':'#a0abc4'}">${infraStr}</td>
         <td>${cell(c.people)}</td>
         <td>${cell(c.goods)}</td>
         <td>${cell(c.venue)}</td>
         <td><a class="link-out" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">看板↗</a></td>
       </tr>`;
     }).join("")}
-    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td colspan="4" style="text-align:left;color:#93a0bd;font-size:10px">共 ${cs.length} 家客户，参与均分计算</td></tr>
+    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td style="font-weight:700;color:#3b7a1f">${infraAvg}</td><td colspan="4" style="text-align:left;color:#93a0bd;font-size:10px">共 ${cs.length} 家客户</td></tr>
     </tbody></table>`;
 }
 let openIdx=-1;
@@ -636,8 +630,9 @@ function buildShotCard(a,rank){
       <div class="item"><div class="k">${a.hasClientScore?a.p_client_avg.toFixed(1):"—"}</div><div class="v">客户平均分</div></div>
     </div>
     <div style="display:flex;gap:10px;font-size:12px;margin-bottom:8px">
-      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">客户分 /70</div><div style="font-weight:700;font-size:20px;color:#4d7cff">${a.p}</div></div>
-      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">代理协同 /30</div><div style="font-weight:700;font-size:20px;color:#00c6a7">${a.v}</div></div>
+      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">榜单分 /30</div><div style="font-weight:700;font-size:16px;color:#4d7cff">${a.p_rank}</div></div>
+      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">基建分 /40</div><div style="font-weight:700;font-size:16px;color:#3b7a1f">${a.p_infra}</div></div>
+      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">协同 /30</div><div style="font-weight:700;font-size:16px;color:#00c6a7">${a.v}</div></div>
     </div>
     <h6>名下客户表现（${a.client_cnt} 家）</h6>
     ${clientTableHtml(a)}
@@ -709,7 +704,7 @@ function renderCountdown(){
   if(!bar)return;
   const now=new Date();
   const contestStart=new Date("2026-07-20T00:00:00");
-  const contestEnd=new Date("2026-08-20T23:59:59");
+  const contestEnd=new Date("2026-08-09T23:59:59");
   let target,label;
   if(now<contestStart){target=contestStart;label="距开赛"}
   else if(now<=contestEnd){target=contestEnd;label="距收官"}
