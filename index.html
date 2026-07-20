@@ -213,7 +213,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
           <select id="infraDate" style="border:.5px solid #c8d0e0;background:#fff;border-radius:6px;padding:4px 8px;font-size:11px;color:#2d3552" onchange="renderInfra()">
             <option value="latest">最新</option>
           </select>
-          <a id="biLink" class="mini-btn" onclick="window.open('','_blank')" style="font-size:10px">📊 BI 取数</a>
+          <a id="biLink" class="mini-btn" href="https://adata.woa.com/bi/view/18372" target="_blank" style="font-size:10px;text-decoration:none">📊 BI 取数</a>
           <button class="mini-btn" onclick="location.reload()">🔄 重新加载</button>
           <button class="mini-btn primary admin-only" style="display:none" onclick="document.getElementById('infraUpload').click()">📤 上传数据</button>
           <input type="file" id="infraUpload" accept=".xlsx,.xls,.csv,.json" style="display:none" onchange="uploadInfraData(event)"/>
@@ -221,7 +221,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
         </span>
       </h3>
       <div id="infraContent">
-        <div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">暂无运营基建数据，管理员可通过上方「📤 上传数据」导入<br/><span style="font-size:10px">数据来源：<a style="color:#4d7cff;cursor:pointer" id="biLinkText">BI 取数链接</a></span></div>
+        <div style="padding:40px;text-align:center;color:#a0abc4;font-size:12px">暂无运营基建数据，管理员可通过上方「📤 上传数据」导入<br/><span style="font-size:10px">数据来源：<a style="color:#4d7cff;cursor:pointer" id="biLinkText" href="https://adata.woa.com/bi/view/18372" target="_blank">BI 取数链接</a></span></div>
       </div>
     </div>
   </div>
@@ -716,7 +716,7 @@ async function shotFullDashboard(){return shotLongImg()}
 
 /* ============ 运营基建 Tab ============ */
 const INFRA_LS_KEY="agent_infra_data";
-let INFRA_BI_LINK=""; // 由管理员设置
+let INFRA_BI_LINK="https://adata.woa.com/bi/view/18372";
 function getInfraData(){
   const s=localStorage.getItem(INFRA_LS_KEY);
   if(s){try{return JSON.parse(s)}catch(e){}}
