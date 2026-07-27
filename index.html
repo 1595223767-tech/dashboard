@@ -209,7 +209,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
       <span class="actions"><button class="mini-btn" onclick="shotLongImg()">📸 生成排行长图</button></span>
     </h3>
     <div class="data-source" id="dataSourceTip">
-      <span>📊 <b>客户分 70</b> = 榜单分 20（均分×0.2） + 基建分 50（手填） · <b>代理协同 30</b>：<span id="mockStatus">比赛结束后上传</span></span>
+      <span>📊 <b>客户分 70</b> = 榜单分 20（名下客户总分排序发分：20/17/14/11/8/5/3/1）+ 基建分 50（手填） · <b>代理协同 30</b>：<span id="mockStatus">比赛结束后上传</span></span>
       <a onclick="window.open('http://1.14.143.207/peipei-mhshj/','_blank')">查看客户运营指标看板 ↗</a>
     </div>
     <div class="rank-head">
@@ -245,7 +245,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 
   <div class="tpl-box">
     <b>综合分 100 = 客户分 70（客户榜平均分 × 0.2 + 运营基建分数 × 1.0）+ 代理协同 30</b><br/>
-    ① 客户榜单：代运营客户在客户榜的平均分（满分 20 分，即百分制均分 × 0.2），每日 13:00 全自动同步，无需操作<br/>
+    ① 客户榜单：把代理商名下所有代运营客户在客户榜的分数相加，按总分排名，第 1→8 名依次拿 <b>20 / 17 / 14 / 11 / 8 / 5 / 3 / 1</b>（同分并列同分），每日 13:00 全自动同步<br/>
     ② 运营基建：管理员在下方按【代理商维度】手填运营基建总分（满分 50 分），分周次独立打分，改完自动保存<br/>
     ③ 代理协同：比赛结束后统一上传（带动报名 10 + 新客拓展 10 + 配合度 10），下方「① 代理协同」下载模板并填写上传<br/>
     <span style="color:#d14343">数据存在浏览器本地（localStorage），换电脑/换浏览器需重新上传；建议定期点「📦 导出全部数据」备份一份到本地文件</span>
@@ -283,7 +283,7 @@ const PWD="happiness720";
 const LSKEY=stage=>`agent_data_${stage}`;
 const LSKEY_V=stage=>`agent_value_${stage}`;
 // 数据结构版本；当代理名单/客户映射变化时递增，用于清理旧缓存
-const RAW_DATA_VERSION="v2026-07-27-c";
+const RAW_DATA_VERSION="v2026-07-27-d";
 (function cleanupOldRawData(){
   if(localStorage.getItem("RAW_DATA_VERSION")===RAW_DATA_VERSION)return;
   ["total","w1","w2","w3"].forEach(s=>localStorage.removeItem(`agent_data_${s}`));
@@ -373,26 +373,48 @@ function renderInfraScoreEditor(){
   }).join("")}</div>`;
 }
 
+// ===== 榜单分 20（代理商按名下客户总分排序发分，整数梯度）=====
+// 8 名代理梯度：20 / 17 / 14 / 11 / 8 / 5 / 3 / 1
+// 同分并列同名次，后续名次按并列人数顺延（跳跃式）
+const RANK_TIER=[20,17,14,11,8,5,3,1];
+function computeAgentRankScore(agents){
+  // 先算每家代理"名下客户总分"作为排序依据
+  const rankBy=agents.map(a=>{
+    const scores=(a.clients||[]).map(c=>c.score).filter(s=>s!=null&&s>=0);
+    return {name:a.name, total:scores.reduce((s,x)=>s+x,0), hasScore:scores.length>0};
+  });
+  // 按总分降序
+  rankBy.sort((x,y)=>y.total-x.total);
+  const result={};
+  let curPos=0;
+  for(let i=0;i<rankBy.length;i++){
+    if(i>0 && rankBy[i].total===rankBy[i-1].total){
+      // 并列：使用上一位的分数
+      result[rankBy[i].name]=result[rankBy[i-1].name];
+    }else{
+      curPos=i;
+      const tier=RANK_TIER[Math.min(curPos,RANK_TIER.length-1)]||0;
+      result[rankBy[i].name]=tier;
+    }
+  }
+  return {tierMap:result, totalMap:Object.fromEntries(rankBy.map(r=>[r.name,r.total]))};
+}
 function buildScores(data,valueData){
   const n=data.length;
   if(n<=1){data.forEach(a=>{a.r=a.p=a.v=a.c=a.total=0;a.disabled=false});return data}
   const valueMap={};
   if(valueData){valueData.forEach(v=>{valueMap[v.name]=v})}
   const infraScoreMap=getInfraScoreForStage(currentStage);
+  const {tierMap:rankTier, totalMap:clientTotalMap}=computeAgentRankScore(data);
   data.forEach(a=>{
     if(!a.clients)a.clients=[];
     if(a.client_cnt==null)a.client_cnt=a.clients.length;
 
-    // ===== 客户分 70 = 榜单均分 × 0.2 + 运营基建分数 × 1.0 (基建分满分50分) =====
-    const clientScores=(a.clients||[]).map(c=>c.score).filter(s=>s!=null&&s>=0);
-    if(clientScores.length>0){
-      const avg=clientScores.reduce((s,x)=>s+x,0)/clientScores.length;
-      a.p_client_avg=Math.round(avg*100)/100;
-      a.p_rank=Math.round(avg*0.2*10)/10; // 满分 20
-      a.hasClientScore=true;
-    }else{
-      a.p_client_avg=0;a.p_rank=0;a.hasClientScore=false;
-    }
+    // ===== 客户分 70 = 榜单梯度分 20（按名下客户总分排序发分）+ 运营基建 50（手填）=====
+    a.client_total=clientTotalMap[a.name]||0;
+    a.p_rank=rankTier[a.name]||0;
+    a.p_client_avg=a.client_total; // 用总分展示（原字段复用）
+    a.hasClientScore=a.client_total>0;
 
     // 运营基建分数（代理级，满分 50，管理员手填）
     const infraVal=infraScoreMap[a.name];
