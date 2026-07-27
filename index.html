@@ -246,7 +246,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
   <div class="tpl-box">
     <b>综合分 100 = 客户分 70（客户榜平均分 × 0.2 + 运营基建分数 × 1.0）+ 代理协同 30</b><br/>
     ① 客户榜单：代运营客户在客户榜的平均分（满分 20 分，即百分制均分 × 0.2），每日 13:00 全自动同步，无需操作<br/>
-    ② 运营基建：管理员在下方手填各客户运营基建分（满分 50 分，直接计入客户分），改完自动刷新保存<br/>
+    ② 运营基建：管理员在下方按【代理商维度】手填运营基建总分（满分 50 分），分周次独立打分，改完自动保存<br/>
     ③ 代理协同：比赛结束后统一上传（带动报名 10 + 新客拓展 10 + 配合度 10），下方「① 代理协同」下载模板并填写上传<br/>
     <span style="color:#d14343">数据存在浏览器本地（localStorage），换电脑/换浏览器需重新上传；建议定期点「📦 导出全部数据」备份一份到本地文件</span>
   </div>
@@ -254,9 +254,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
   <div style="font-size:13px;font-weight:700;color:#2d3552;margin-bottom:8px">① 代理协同（3 项各 10 分，比赛结束后上传一次）</div>
   <div class="slot-grid" id="valueSlots"></div>
 
-  <div style="font-size:13px;font-weight:700;color:#2d3552;margin-top:14px;margin-bottom:6px">📝 运营基建分数（满分 50 分，管理员手填，改完自动保存）</div>
+  <div style="font-size:13px;font-weight:700;color:#2d3552;margin-top:14px;margin-bottom:6px">📝 运营基建分数（代理商维度，满分 50 分，改完自动保存 · 按周次独立打分）</div>
   <div style="background:#f4f6fc;border-radius:10px;padding:12px;margin-bottom:14px">
-    <div style="font-size:11px;color:#6b7898;margin-bottom:8px">按代运营客户分别填入 0-50 之间的运营基建打分（支持小数，直接展示在客户明细表并计入打分）</div>
     <div id="infraScoreEditor"></div>
   </div>
 
@@ -284,14 +283,27 @@ const PWD="happiness720";
 const LSKEY=stage=>`agent_data_${stage}`;
 const LSKEY_V=stage=>`agent_value_${stage}`;
 // 数据结构版本；当代理名单/客户映射变化时递增，用于清理旧缓存
-const RAW_DATA_VERSION="v2026-07-27-b";
+const RAW_DATA_VERSION="v2026-07-27-c";
 (function cleanupOldRawData(){
   if(localStorage.getItem("RAW_DATA_VERSION")===RAW_DATA_VERSION)return;
   ["total","w1","w2","w3"].forEach(s=>localStorage.removeItem(`agent_data_${s}`));
   localStorage.setItem("RAW_DATA_VERSION",RAW_DATA_VERSION);
 })();
 
+// 第一周固定数据（2026-07-27 定稿）— 客户榜第 1 周结算分
+const W1_FROZEN_DATA=[
+  {"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":20}],"industries":[]},
+  {"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":15}],"industries":[]},
+  {"name":"厚拓科技","client_cnt":1,"clients":[{"name":"元气达人","score":null}],"industries":[]},
+  {"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":5},{"name":"太力","score":20},{"name":"上海成事好物","score":null}],"industries":[]},
+  {"name":"蓝橘传媒","client_cnt":1,"clients":[{"name":"宝家洁","score":5}],"industries":[]},
+  {"name":"上海亦芯","client_cnt":3,"clients":[{"name":"上海成事好物","score":null},{"name":"友望","score":15},{"name":"卡伴","score":10}],"industries":[]},
+  {"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null}],"industries":[]},
+  {"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":15},{"name":"Vtt","score":null},{"name":"极萌","score":5}],"industries":[]}
+];
 function loadStageData(stage){
+  // 第一周固定：不从 localStorage 读，直接返回定稿快照
+  if(stage==="w1")return JSON.parse(JSON.stringify(W1_FROZEN_DATA));
   const s=localStorage.getItem(LSKEY(stage));
   if(s){try{return JSON.parse(s)}catch(e){}}
   if(stage==="total")return JSON.parse(JSON.stringify(RAW_DATA));
@@ -303,48 +315,45 @@ function loadValueData(stage){
   return null;
 }
 
-const INFRA_SCORE_LS_KEY="agent_client_infra_score";
-// 第一周基建分种子数据（key = 代理名||客户名，值 0-50）
-const INFRA_SEED_W1={
-  "广州众邦||太力":16.5,
-  "致胜||友望":43.5,
-  "厚拓科技||元气达人":40,
-  "深圳响当当||宝家洁":17,
-  "深圳响当当||太力":17,
-  "深圳响当当||上海成事好物":17,
-  "蓝橘传媒||宝家洁":36.5,
-  "上海亦芯||上海成事好物":16.5,
-  "上海亦芯||友望":16.5,
-  "上海亦芯||卡伴":16.5,
-  "广州晨曦||友望":40,
-  "广州晨曦||Vtt":40,
-  "广州晨曦||极萌":40
+// ===== 运营基建分 =====
+// 结构变更（2026-07-27）：由「客户级」升级为「代理级」——每个代理商一个总分（0-50）。
+// 存储结构：{ [stage]: { [agentName]: 0-50 } }；stage 包含 total/w1/w2/w3
+const INFRA_SCORE_LS_KEY="agent_infra_score_by_stage";
+// 第一周基建分（代理级，满分50，已定稿）
+const INFRA_W1={
+  "厚拓科技":40,
+  "致胜":43.5,
+  "广州晨曦":40,
+  "蓝橘传媒":36.5,
+  "上海亦芯":16.5,
+  "深圳响当当":17,
+  "广州众邦":16.5,
+  "渠网在线":0
 };
-const INFRA_SEED_FLAG="agent_infra_seed_v2026w1";
+const INFRA_SEED_FLAG="agent_infra_seed_v2026w1_agent_level";
 function seedInfraOnce(){
   if(localStorage.getItem(INFRA_SEED_FLAG))return;
-  const cur=localStorage.getItem(INFRA_SCORE_LS_KEY);
-  let map={};
-  if(cur){try{map=JSON.parse(cur)}catch(e){map={}}}
-  // 兼容旧结构：如果检测到旧的仅客户名 key（如 "宝家洁": 5），迁移/清空
-  const hasOldKeys=Object.keys(map).some(k=>!k.includes("||"));
-  if(hasOldKeys)map={};
-  Object.assign(map,INFRA_SEED_W1);
+  // 清掉旧结构缓存
+  localStorage.removeItem("agent_client_infra_score");
+  const map={total:{...INFRA_W1}, w1:{...INFRA_W1}, w2:{}, w3:{}};
   localStorage.setItem(INFRA_SCORE_LS_KEY,JSON.stringify(map));
   localStorage.setItem(INFRA_SEED_FLAG,"1");
 }
-function getInfraScoreMap(){
+function getInfraStageMap(){
   const s=localStorage.getItem(INFRA_SCORE_LS_KEY);
   if(s){try{return JSON.parse(s)}catch(e){}}
-  return {};
+  return {total:{},w1:{},w2:{},w3:{}};
 }
-function infraKey(agent,client){return agent+"||"+client}
-function setInfraScore(agent,client,val){
-  const map=getInfraScoreMap();
-  const k=infraKey(agent,client);
-  if(val===""||val==null){delete map[k]}
-  else{map[k]=Math.max(0,Math.min(50,parseFloat(val)||0))}
-  localStorage.setItem(INFRA_SCORE_LS_KEY,JSON.stringify(map));
+function getInfraScoreForStage(stage){
+  const m=getInfraStageMap();
+  return m[stage]||{};
+}
+function setInfraScore(agent,val){
+  const m=getInfraStageMap();
+  if(!m[currentStage])m[currentStage]={};
+  if(val===""||val==null){delete m[currentStage][agent]}
+  else{m[currentStage][agent]=Math.max(0,Math.min(50,parseFloat(val)||0))}
+  localStorage.setItem(INFRA_SCORE_LS_KEY,JSON.stringify(m));
   buildScores(AGENTS,loadValueData(currentStage));
   renderRank();
   renderInfraScoreEditor();
@@ -352,20 +361,16 @@ function setInfraScore(agent,client,val){
 function renderInfraScoreEditor(){
   const el=document.getElementById("infraScoreEditor");
   if(!el)return;
-  const map=getInfraScoreMap();
+  const scoreMap=getInfraScoreForStage(currentStage);
   if(AGENTS.length===0){el.innerHTML='<div style="color:#a0abc4;font-size:11px">暂无代理</div>';return}
-  el.innerHTML=AGENTS.map(a=>{
-    if(!a.clients||a.clients.length===0)return"";
-    const items=a.clients.map(c=>{
-      const k=infraKey(a.name,c.name);
-      const v=map[k];
-      return `<div style="background:#fff;border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px;border:.5px solid #e5eaf5">
-        <span style="font-size:12px;color:#2d3552;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</span>
-        <input type="number" min="0" max="50" step="0.1" placeholder="—" value="${v!=null?v:""}" style="width:52px;border:.5px solid #c8d0e0;border-radius:6px;padding:3px 6px;font-size:12px;text-align:center" onchange="setInfraScore('${a.name.replace(/'/g,"\\'")}','${c.name.replace(/'/g,"\\'")}',this.value)"/>
-      </div>`;
-    }).join("");
-    return `<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:#4d7cff;margin:4px 0 6px">${a.name}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${items}</div></div>`;
-  }).join("");
+  el.innerHTML=`<div style="font-size:11px;color:#6b7898;margin-bottom:8px">当前编辑：<b style="color:#4d7cff">${STAGE_LABEL[currentStage]}</b>（每个代理一个基建总分，满分 50）</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">${AGENTS.map(a=>{
+    const v=scoreMap[a.name];
+    return `<div style="background:#fff;border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px;border:.5px solid #e5eaf5">
+      <span style="font-size:12px;color:#2d3552;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.name}</span>
+      <input type="number" min="0" max="50" step="0.1" placeholder="—" value="${v!=null?v:""}" style="width:60px;border:.5px solid #c8d0e0;border-radius:6px;padding:3px 6px;font-size:12px;text-align:center" onchange="setInfraScore('${a.name.replace(/'/g,"\\'")}',this.value)"/>
+    </div>`;
+  }).join("")}</div>`;
 }
 
 function buildScores(data,valueData){
@@ -373,7 +378,7 @@ function buildScores(data,valueData){
   if(n<=1){data.forEach(a=>{a.r=a.p=a.v=a.c=a.total=0;a.disabled=false});return data}
   const valueMap={};
   if(valueData){valueData.forEach(v=>{valueMap[v.name]=v})}
-  const infraScoreMap=getInfraScoreMap();
+  const infraScoreMap=getInfraScoreForStage(currentStage);
   data.forEach(a=>{
     if(!a.clients)a.clients=[];
     if(a.client_cnt==null)a.client_cnt=a.clients.length;
@@ -389,11 +394,10 @@ function buildScores(data,valueData){
       a.p_client_avg=0;a.p_rank=0;a.hasClientScore=false;
     }
 
-    // 运营基建分数（每家客户满分50，取均值；key=代理||客户）
-    const infraScores=(a.clients||[]).map(c=>infraScoreMap[a.name+"||"+c.name]).filter(s=>s!=null&&s>=0);
-    if(infraScores.length>0){
-      const avg=infraScores.reduce((s,x)=>s+x,0)/infraScores.length;
-      a.p_infra=Math.round(avg*10)/10; // 满分 50
+    // 运营基建分数（代理级，满分 50，管理员手填）
+    const infraVal=infraScoreMap[a.name];
+    if(infraVal!=null&&infraVal>=0){
+      a.p_infra=Math.round(infraVal*10)/10;
       a.hasInfraScore=true;
     }else{
       a.p_infra=0;a.hasInfraScore=false;
@@ -504,31 +508,31 @@ function clientTableHtml(a){
   if(cs.length===0)return '<div style="padding:20px;text-align:center;color:#a0abc4;font-size:11px">暂无客户数据</div>';
   const scores=cs.map(c=>c.score).filter(s=>s!=null&&s>=0);
   const avg=scores.length?(scores.reduce((s,x)=>s+x,0)/scores.length).toFixed(1):"—";
-  const infraScoreMap=getInfraScoreMap();
-  const infraScores=cs.map(c=>infraScoreMap[a.name+"||"+c.name]).filter(s=>s!=null&&s>=0);
-  const infraAvg=infraScores.length?(infraScores.reduce((s,x)=>s+x,0)/infraScores.length).toFixed(1):"—";
-  return `<table>
+  const infraScoreMap=getInfraScoreForStage(currentStage);
+  const agentInfra=infraScoreMap[a.name];
+  const infraStr=agentInfra!=null?agentInfra.toFixed(1):"—";
+  return `<div style="background:#f4f6fc;border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;font-size:12px">
+    <span style="color:#2d3552;font-weight:600">🏗️ 该代理运营基建分（满分 50）</span>
+    <span style="font-weight:700;color:#3b7a1f;font-size:14px">${infraStr}</span>
+  </div>
+  <table>
     <thead>
       <tr>
         <th style="text-align:left">客户</th>
         <th>榜单得分（人货场）</th>
-        <th>运营基建分数（满分50）</th>
         <th>详情</th>
       </tr>
     </thead>
     <tbody>${cs.map(c=>{
       const has=c.score!=null&&c.score>=0;
       const scoreStr=has?c.score.toFixed(1):"—";
-      const is=infraScoreMap[a.name+"||"+c.name];
-      const infraStr=is!=null?is.toFixed(1):"—";
       return `<tr>
         <td class="cust">${c.name}</td>
         <td style="font-weight:${has?'700':'400'};color:${has?'#4d7cff':'#a0abc4'};font-size:${has?'13px':'11px'}">${scoreStr}</td>
-        <td style="font-weight:${is!=null?'700':'400'};color:${is!=null?'#3b7a1f':'#a0abc4'};font-size:${is!=null?'13px':'11px'}">${infraStr}</td>
         <td><a class="link-out" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">看板↗</a></td>
       </tr>`;
     }).join("")}
-    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td style="font-weight:700;color:#3b7a1f">${infraAvg}</td><td style="color:#93a0bd;font-size:10px">共 ${cs.length} 家客户</td></tr>
+    <tr style="background:#f4f6fc"><td class="cust" style="font-weight:700">平均分</td><td style="font-weight:700;color:#4d7cff">${avg}</td><td style="color:#93a0bd;font-size:10px">共 ${cs.length} 家客户</td></tr>
     </tbody></table>`;
 }
 let openIdx=-1;
@@ -545,6 +549,7 @@ function switchStage(el){
   openIdx=-1;
   document.getElementById("rankPanel").style.display="block";
   refresh();
+  renderInfraScoreEditor();
 }
 function switchPolicy(){/* removed */}
 function fillTopPolicies(){/* removed - 政策墙已删除 */}
