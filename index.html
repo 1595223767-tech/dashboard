@@ -283,7 +283,7 @@ const PWD="happiness720";
 const LSKEY=stage=>`agent_data_${stage}`;
 const LSKEY_V=stage=>`agent_value_${stage}`;
 // 数据结构版本；当代理名单/客户映射变化时递增，用于清理旧缓存
-const RAW_DATA_VERSION="v2026-07-28-c";
+const RAW_DATA_VERSION="v2026-08-03-a";
 (function cleanupOldRawData(){
   if(localStorage.getItem("RAW_DATA_VERSION")===RAW_DATA_VERSION)return;
   ["total","w1","w2","w3"].forEach(s=>localStorage.removeItem(`agent_data_${s}`));
@@ -301,9 +301,32 @@ const W1_FROZEN_DATA=[
   {"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null}],"industries":[]},
   {"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":15},{"name":"Vtt","score":null},{"name":"极萌","score":5}],"industries":[]}
 ];
+// 第二周固定数据（2026-08-03 定稿）— 客户榜第 2 周结算分（管理员手动录入）
+const W2_FROZEN_DATA=[
+  {"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":25}],"industries":[]},
+  {"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":45}],"industries":[]},
+  {"name":"厚拓科技","client_cnt":1,"clients":[{"name":"元气达人","score":0}],"industries":[]},
+  {"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":0},{"name":"太力","score":25},{"name":"上海成事好物","score":0}],"industries":[]},
+  {"name":"蓝橘传媒","client_cnt":1,"clients":[{"name":"宝家洁","score":0}],"industries":[]},
+  {"name":"上海亦芯","client_cnt":3,"clients":[{"name":"上海成事好物","score":0},{"name":"友望","score":45},{"name":"卡伴","score":25}],"industries":[]},
+  {"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":0}],"industries":[]},
+  {"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":45},{"name":"Vtt","score":0},{"name":"极萌","score":0}],"industries":[]}
+];
+// 第二周榜单分（管理员手动指定，跳过梯度算法）
+const W2_RANK_MANUAL={
+  "上海亦芯":20,
+  "广州晨曦":15,
+  "致胜":15,
+  "广州众邦":10,
+  "深圳响当当":10,
+  "厚拓科技":0,
+  "蓝橘传媒":0,
+  "渠网在线":0
+};
 function loadStageData(stage){
   // 第一周固定：不从 localStorage 读，直接返回定稿快照
   if(stage==="w1")return JSON.parse(JSON.stringify(W1_FROZEN_DATA));
+  if(stage==="w2")return JSON.parse(JSON.stringify(W2_FROZEN_DATA));
   const s=localStorage.getItem(LSKEY(stage));
   if(s){try{return JSON.parse(s)}catch(e){}}
   if(stage==="total")return JSON.parse(JSON.stringify(RAW_DATA));
@@ -341,12 +364,23 @@ const INFRA_TOTAL_CURRENT={
   "厚拓科技":10,
   "渠网在线":0
 };
-const INFRA_SEED_FLAG="agent_infra_seed_v2026-07-28";
+// 第二周基建分（2026-08-03 由 CSV 数据算得：规模20/环比15/ROI15，满分50）
+const INFRA_W2={
+  "上海亦芯":38.2,
+  "致胜":33.7,
+  "厚拓科技":31.5,
+  "蓝橘传媒":31,
+  "广州晨曦":27.5,
+  "广州众邦":14,
+  "深圳响当当":7.7,
+  "渠网在线":0
+};
+const INFRA_SEED_FLAG="agent_infra_seed_v2026-08-03";
 function seedInfraOnce(){
   if(localStorage.getItem(INFRA_SEED_FLAG))return;
   // 清掉旧结构缓存
   localStorage.removeItem("agent_client_infra_score");
-  const map={total:{...INFRA_TOTAL_CURRENT}, w1:{...INFRA_W1}, w2:{}, w3:{}};
+  const map={total:{...INFRA_TOTAL_CURRENT}, w1:{...INFRA_W1}, w2:{...INFRA_W2}, w3:{}};
   localStorage.setItem(INFRA_SCORE_LS_KEY,JSON.stringify(map));
   localStorage.setItem(INFRA_SEED_FLAG,"1");
 }
@@ -417,13 +451,15 @@ function buildScores(data,valueData){
   if(valueData){valueData.forEach(v=>{valueMap[v.name]=v})}
   const infraScoreMap=getInfraScoreForStage(currentStage);
   const {tierMap:rankTier, totalMap:clientTotalMap}=computeAgentRankScore(data);
+  // 第二周榜单分由管理员手动指定，覆盖梯度算法结果
+  const useManualRank = (currentStage==="w2");
   data.forEach(a=>{
     if(!a.clients)a.clients=[];
     if(a.client_cnt==null)a.client_cnt=a.clients.length;
 
     // ===== 客户分 70 = 榜单梯度分 20（按名下客户总分排序发分）+ 运营基建 50（手填）=====
     a.client_total=clientTotalMap[a.name]||0;
-    a.p_rank=rankTier[a.name]||0;
+    a.p_rank=useManualRank ? (W2_RANK_MANUAL[a.name]||0) : (rankTier[a.name]||0);
     a.p_client_avg=a.client_total; // 用总分展示（原字段复用）
     a.hasClientScore=a.client_total>0;
 
