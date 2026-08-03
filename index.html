@@ -283,7 +283,7 @@ const PWD="happiness720";
 const LSKEY=stage=>`agent_data_${stage}`;
 const LSKEY_V=stage=>`agent_value_${stage}`;
 // 数据结构版本；当代理名单/客户映射变化时递增，用于清理旧缓存
-const RAW_DATA_VERSION="v2026-08-03-a";
+const RAW_DATA_VERSION="v2026-08-03-b";
 (function cleanupOldRawData(){
   if(localStorage.getItem("RAW_DATA_VERSION")===RAW_DATA_VERSION)return;
   ["total","w1","w2","w3"].forEach(s=>localStorage.removeItem(`agent_data_${s}`));
@@ -306,21 +306,21 @@ const W2_FROZEN_DATA=[
   {"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":25}],"industries":[]},
   {"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":45}],"industries":[]},
   {"name":"厚拓科技","client_cnt":1,"clients":[{"name":"元气达人","score":0}],"industries":[]},
-  {"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":0},{"name":"太力","score":25},{"name":"上海成事好物","score":0}],"industries":[]},
-  {"name":"蓝橘传媒","client_cnt":1,"clients":[{"name":"宝家洁","score":0}],"industries":[]},
+  {"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":5},{"name":"太力","score":25},{"name":"上海成事好物","score":0}],"industries":[]},
+  {"name":"蓝橘传媒","client_cnt":1,"clients":[{"name":"宝家洁","score":5}],"industries":[]},
   {"name":"上海亦芯","client_cnt":3,"clients":[{"name":"上海成事好物","score":0},{"name":"友望","score":45},{"name":"卡伴","score":25}],"industries":[]},
   {"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":0}],"industries":[]},
-  {"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":45},{"name":"Vtt","score":0},{"name":"极萌","score":0}],"industries":[]}
+  {"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":45},{"name":"Vtt","score":0},{"name":"极萌","score":5}],"industries":[]}
 ];
 // 第二周榜单分（管理员手动指定，跳过梯度算法）
 const W2_RANK_MANUAL={
   "上海亦芯":20,
-  "广州晨曦":15,
+  "广州晨曦":16,
   "致胜":15,
+  "深圳响当当":12,
   "广州众邦":10,
-  "深圳响当当":10,
+  "蓝橘传媒":5,
   "厚拓科技":0,
-  "蓝橘传媒":0,
   "渠网在线":0
 };
 function loadStageData(stage){
