@@ -209,7 +209,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
       <span class="actions"><button class="mini-btn" onclick="shotLongImg()">📸 生成排行长图</button></span>
     </h3>
     <div class="data-source" id="dataSourceTip">
-      <span>📊 <b>综合分 100</b> = 客户分 70（榜单分 20 + 运营基建 50）+ 代理协同 30（报名数 10 + 拓展数 10 + 配合度 10） · <span id="mockStatus" style="color:#93a0bd;font-weight:400">数据管理员手动上传</span></span>
+      <span>📊 <b>综合分 100</b> = 客户分 70（规模分 20 + 运营基建 50）+ 代理协同 30 · <span id="mockStatus" style="color:#93a0bd;font-weight:400">数据管理员手动上传</span></span>
       <a onclick="window.open('http://1.14.143.207/peipei-mhshj/','_blank')">查看客户运营指标看板 ↗</a>
     </div>
     <div class="rank-head">
@@ -222,7 +222,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
     <div id="rankList"></div>
   </div>
   </div><!-- end rankPanel -->
-  <div class="rule-banner" style="margin-top:8px">📊 <b>综合分 100</b> = 客户分 70（榜单分 20 + 运营基建 50）+ 代理协同 30（报名数 10 + 拓展数 10 + 配合度 10）</div>
+  <div class="rule-banner" style="margin-top:8px">📊 <b>综合分 100</b> = 客户分 70（规模分 20 + 运营基建 50）+ 代理协同 30</div>
   <div class="footer-note">数据由管理员手动上传更新 · © 腾讯营销</div>
 </div>
 <div class="modal" id="loginModal">
@@ -244,10 +244,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
   <h4>🛠 管理面板 <button class="close-btn" onclick="closeAdminPanel()">收起</button></h4>
 
   <div class="tpl-box">
-    <b>综合分 100 = 客户分 70（客户榜平均分 × 0.2 + 运营基建分数 × 1.0）+ 代理协同 30</b><br/>
-    ① 客户榜单：把代理商名下所有代运营客户在客户榜的分数相加，按总分排名，第 1→8 名依次拿 <b>20 / 17 / 14 / 11 / 8 / 5 / 3 / 1</b>（同分并列同分），管理员手动更新客户榜单分<br/>
-    ② 运营基建：管理员在下方按【代理商维度】手填运营基建总分（满分 50 分），分周次独立打分，改完自动保存<br/>
-    ③ 代理协同：比赛结束后统一上传（带动报名 10 + 新客拓展 10 + 配合度 10），下方「① 代理协同」下载模板并填写上传<br/>
+    <b>综合分 100 = 客户分 70（规模分 20 + 运营基建 50）+ 代理协同 30</b><br/>
+    ① 规模分（20）：管理员按代理商活动期消耗规模手动打分，第一/二周历史仍沿用客户榜排序梯度分<br/>
+    ② 运营基建（50）：管理员在下方按【代理商维度】手填运营基建总分，分周次独立打分，改完自动保存<br/>
+    ③ 代理协同（30）：第三周起由管理员手动定档（直接写入代码），历史周次仍支持上传模板<br/>
     <span style="color:#d14343">数据存在浏览器本地（localStorage），换电脑/换浏览器需重新上传；建议定期点「📦 导出全部数据」备份一份到本地文件</span>
   </div>
 
@@ -267,7 +267,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 </div>
 <div class="hidden-shot" id="shotHolder"></div>
 <script>
-const RAW_DATA=[{"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":25}],"industries":[]},{"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":45}],"industries":[]},{"name":"厚拓科技","client_cnt":1,"clients":[{"name":"元气达人","score":0}],"industries":[]},{"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":5},{"name":"太力","score":25},{"name":"上海成事好物","score":0}],"industries":[]},{"name":"蓝橘传媒","client_cnt":1,"clients":[{"name":"宝家洁","score":5}],"industries":[]},{"name":"上海亦芯","client_cnt":3,"clients":[{"name":"上海成事好物","score":0},{"name":"友望","score":45},{"name":"卡伴","score":25}],"industries":[]},{"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":0}],"industries":[]},{"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":45},{"name":"Vtt","score":0},{"name":"极萌","score":5}],"industries":[]}];
+const RAW_DATA=[{"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":null}],"industries":[]},{"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":null}],"industries":[]},{"name":"厚拓科技","client_cnt":3,"clients":[{"name":"元气达人","score":null},{"name":"杭州木气","score":null},{"name":"古宛堂","score":null}],"industries":[]},{"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":null},{"name":"太力","score":null},{"name":"上海成事好物","score":null}],"industries":[]},{"name":"蓝橘传媒","client_cnt":1,"clients":[{"name":"宝家洁","score":null}],"industries":[]},{"name":"上海亦芯","client_cnt":3,"clients":[{"name":"上海成事好物","score":null},{"name":"友望","score":null},{"name":"卡伴","score":null}],"industries":[]},{"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null}],"industries":[]},{"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":null},{"name":"Vtt","score":null},{"name":"极萌","score":null}],"industries":[]}];
 const STAGES=["total","w1","w2","w3"];
 const STAGE_LABEL={total:"总榜",w1:"第 1 周",w2:"第 2 周",w3:"第 3 周"};
 // 客户榜积分（人货场维度累加分）— 每天从 http://1.14.143.207/peipei-mhshj/ 同步一次
@@ -283,7 +283,7 @@ const PWD="happiness720";
 const LSKEY=stage=>`agent_data_${stage}`;
 const LSKEY_V=stage=>`agent_value_${stage}`;
 // 数据结构版本；当代理名单/客户映射变化时递增，用于清理旧缓存
-const RAW_DATA_VERSION="v2026-08-03-c";
+const RAW_DATA_VERSION="v2026-08-10-a";
 (function cleanupOldRawData(){
   if(localStorage.getItem("RAW_DATA_VERSION")===RAW_DATA_VERSION)return;
   ["total","w1","w2","w3"].forEach(s=>localStorage.removeItem(`agent_data_${s}`));
@@ -301,7 +301,7 @@ const W1_FROZEN_DATA=[
   {"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null}],"industries":[]},
   {"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":15},{"name":"Vtt","score":null},{"name":"极萌","score":5}],"industries":[]}
 ];
-// 第二周固定数据（2026-08-03 定稿）— 客户榜第 2 周结算分（管理员手动录入）
+// 第二周固定数据（2026-08-03 定稿）— 客户榜第2 周结算分（管理员手动录入）
 const W2_FROZEN_DATA=[
   {"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":25}],"industries":[]},
   {"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":45}],"industries":[]},
@@ -312,6 +312,39 @@ const W2_FROZEN_DATA=[
   {"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":0}],"industries":[]},
   {"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":45},{"name":"Vtt","score":0},{"name":"极萌","score":5}],"industries":[]}
 ];
+// 第三周固定数据（2026-08-10 定稿）— 活动整体结算（7/20-8/9），客户名单更新：厚拓新增杭州木气、古宛堂
+const W3_FROZEN_DATA=[
+  {"name":"广州众邦","client_cnt":1,"clients":[{"name":"太力","score":null}],"industries":[]},
+  {"name":"致胜","client_cnt":1,"clients":[{"name":"友望","score":null}],"industries":[]},
+  {"name":"厚拓科技","client_cnt":3,"clients":[{"name":"元气达人","score":null},{"name":"杭州木气","score":null},{"name":"古宛堂","score":null}],"industries":[]},
+  {"name":"深圳响当当","client_cnt":3,"clients":[{"name":"宝家洁","score":null},{"name":"太力","score":null},{"name":"上海成事好物","score":null}],"industries":[]},
+  {"name":"蓝橘传媒","client_cnt":1,"clients":[{"name":"宝家洁","score":null}],"industries":[]},
+  {"name":"上海亦芯","client_cnt":3,"clients":[{"name":"上海成事好物","score":null},{"name":"友望","score":null},{"name":"卡伴","score":null}],"industries":[]},
+  {"name":"渠网在线","client_cnt":1,"clients":[{"name":"上海成事好物","score":null}],"industries":[]},
+  {"name":"广州晨曦","client_cnt":3,"clients":[{"name":"友望","score":null},{"name":"Vtt","score":null},{"name":"极萌","score":null}],"industries":[]}
+];
+// 第三周＆总榜「规模分」（管理员手动指定，满分20，2026-08-10 定稿）
+const W3_SCALE_MANUAL={
+  "上海亦芯":20,
+  "广州晨曦":18,
+  "致胜":16,
+  "深圳响当当":14,
+  "广州众邦":12,
+  "厚拓科技":12,
+  "蓝橘传媒":10,
+  "渠网在线":0
+};
+// 第三周＆总榜「代理协同」（管理员手动指定，满分30，2026-08-10 定稿）
+const W3_COOP_MANUAL={
+  "广州晨曦":30,
+  "厚拓科技":30,
+  "上海亦芯":30,
+  "广州众邦":25,
+  "致胜":25,
+  "深圳响当当":25,
+  "蓝橘传媒":25,
+  "渠网在线":25
+};
 // 第二周榜单分（管理员手动指定，跳过梯度算法）
 const W2_RANK_MANUAL={
   "上海亦芯":20,
@@ -324,12 +357,13 @@ const W2_RANK_MANUAL={
   "渠网在线":0
 };
 function loadStageData(stage){
-  // 第一周固定：不从 localStorage 读，直接返回定稿快照
+  // 第一周固定：不从localStorage 读，直接返回定稿快照
   if(stage==="w1")return JSON.parse(JSON.stringify(W1_FROZEN_DATA));
   if(stage==="w2")return JSON.parse(JSON.stringify(W2_FROZEN_DATA));
+  // 第三周 & 总榜：均对齐第三周（活动整体结算）定稿数据
+  if(stage==="w3"||stage==="total")return JSON.parse(JSON.stringify(W3_FROZEN_DATA));
   const s=localStorage.getItem(LSKEY(stage));
   if(s){try{return JSON.parse(s)}catch(e){}}
-  if(stage==="total")return JSON.parse(JSON.stringify(RAW_DATA));
   return null;
 }
 function loadValueData(stage){
@@ -353,18 +387,8 @@ const INFRA_W1={
   "广州众邦":16.5,
   "渠网在线":0
 };
-// 当前（总榜）基建分——与第二周对齐（2026-08-03）
-const INFRA_TOTAL_CURRENT={
-  "上海亦芯":38.2,
-  "致胜":33.7,
-  "厚拓科技":31.5,
-  "蓝橘传媒":31,
-  "广州晨曦":27.5,
-  "广州众邦":14,
-  "深圳响当当":7.7,
-  "渠网在线":0
-};
-// 第二周基建分（2026-08-03 由 CSV 数据算得：规模20/环比15/ROI15，满分50）
+// 当前（总榜）基建分历史记录 — 已由INFRA_W3 取代（2026-08-10），保留仅供追溯
+//第二周基建分（2026-08-03 由CSV数据算得：规模20/环比15/ROI15，满分50）
 const INFRA_W2={
   "上海亦芯":38.2,
   "致胜":33.7,
@@ -375,12 +399,24 @@ const INFRA_W2={
   "深圳响当当":7.7,
   "渠网在线":0
 };
-const INFRA_SEED_FLAG="agent_infra_seed_v2026-08-03-c";
+// 第三周基建分（2026-08-10 由活动整体CSV数据算得：规模20/T+21环比15/ROI15，满分50。活动期7/20-8/9）
+const INFRA_W3={
+  "厚拓科技":37.0,
+  "致胜":28.5,
+  "上海亦芯":23.5,
+  "广州晨曦":21.2,
+  "蓝橘传媒":19.6,
+  "深圳响当当":6.6,
+  "广州众邦":6.3,
+  "渠网在线":0
+};
+const INFRA_SEED_FLAG="agent_infra_seed_v2026-08-10-a";
 function seedInfraOnce(){
   if(localStorage.getItem(INFRA_SEED_FLAG))return;
   // 清掉旧结构缓存
   localStorage.removeItem("agent_client_infra_score");
-  const map={total:{...INFRA_TOTAL_CURRENT}, w1:{...INFRA_W1}, w2:{...INFRA_W2}, w3:{}};
+  // 总榜对齐第三周（活动整体结算）
+  const map={total:{...INFRA_W3}, w1:{...INFRA_W1}, w2:{...INFRA_W2}, w3:{...INFRA_W3}};
   localStorage.setItem(INFRA_SCORE_LS_KEY,JSON.stringify(map));
   localStorage.setItem(INFRA_SEED_FLAG,"1");
 }
@@ -451,15 +487,21 @@ function buildScores(data,valueData){
   if(valueData){valueData.forEach(v=>{valueMap[v.name]=v})}
   const infraScoreMap=getInfraScoreForStage(currentStage);
   const {tierMap:rankTier, totalMap:clientTotalMap}=computeAgentRankScore(data);
-  // 第二周 & 总榜榜单分由管理员手动指定，覆盖梯度算法结果
-  const useManualRank = (currentStage==="w2" || currentStage==="total");
+  // 第二周榜单分由管理员手动指定，覆盖梯度算法结果
+  const useManualRank = (currentStage==="w2");
+  // 第三周 & 总榜：规模分、代理协同均由管理员手动指定（活动整体结算，2026-08-10 定稿）
+  const useManualScaleCoop = (currentStage==="w3" || currentStage==="total");
   data.forEach(a=>{
     if(!a.clients)a.clients=[];
     if(a.client_cnt==null)a.client_cnt=a.clients.length;
 
-    // ===== 客户分 70 = 榜单梯度分 20（按名下客户总分排序发分）+ 运营基建 50（手填）=====
+    // ===== 客户分 70= 榜单/规模分 20+ 运营基建 50（手填）=====
     a.client_total=clientTotalMap[a.name]||0;
-    a.p_rank=useManualRank ? (W2_RANK_MANUAL[a.name]||0) : (rankTier[a.name]||0);
+    if(useManualScaleCoop){
+      a.p_rank=W3_SCALE_MANUAL[a.name]||0;
+    }else{
+      a.p_rank=useManualRank ? (W2_RANK_MANUAL[a.name]||0) : (rankTier[a.name]||0);
+    }
     a.p_client_avg=a.client_total; // 用总分展示（原字段复用）
     a.hasClientScore=a.client_total>0;
 
@@ -472,21 +514,27 @@ function buildScores(data,valueData){
       a.p_infra=0;a.hasInfraScore=false;
     }
 
-    a.p=Math.round((a.p_rank+a.p_infra)*10)/10; // 客户分合计（0-70）
+    a.p=Math.round((a.p_rank+a.p_infra)*10)/10; // 客户分合计（0-70，第三周起改为规模+基建）
 
     // ===== 代理协同 30 =====
-    // 带动客户报名数、新客拓展数、比赛配合度 各 10 分
-    const vd=valueMap[a.name];
-    if(vd){
-      a.v_signup=Math.round((vd.signup_clients||0)*0.1*10)/10;
-      a.v_newclient=Math.round((vd.new_clients_pct||0)*0.1*10)/10;
-      a.v_manager=Math.round((vd.manager_score||0)*0.1*10)/10;
-      a.v=Math.round((a.v_signup+a.v_newclient+a.v_manager)*10)/10;
+    if(useManualScaleCoop){
+      a.v=W3_COOP_MANUAL[a.name]||0;
+      a.v_signup=a.v_newclient=a.v_manager=0;
       a.hasRealValue=true;
     }else{
-      a.v_signup=a.v_newclient=a.v_manager=0;
-      a.v=0;
-      a.hasRealValue=false;
+      // 带动客户报名数、新客拓展数、比赛配合度 各 10 分
+      const vd=valueMap[a.name];
+      if(vd){
+        a.v_signup=Math.round((vd.signup_clients||0)*0.1*10)/10;
+        a.v_newclient=Math.round((vd.new_clients_pct||0)*0.1*10)/10;
+        a.v_manager=Math.round((vd.manager_score||0)*0.1*10)/10;
+        a.v=Math.round((a.v_signup+a.v_newclient+a.v_manager)*10)/10;
+        a.hasRealValue=true;
+      }else{
+        a.v_signup=a.v_newclient=a.v_manager=0;
+        a.v=0;
+        a.hasRealValue=false;
+      }
     }
     a.c=0;a.r=0;
     a.total=Math.round((a.p+a.v)*10)/10;
@@ -563,7 +611,7 @@ function renderRank(){
       <div class="drawer-inner" style="grid-template-columns:1fr">
         <div>
           <h4>
-            <span>名下客户 · ${a.client_cnt} 家 &nbsp;<span style="color:#93a0bd;font-weight:400;font-size:10px">（综合 ${a.total} = 榜单分 ${a.p_rank || 0}/20 · 基建分 ${a.p_infra || 0}/50 · 协同 ${a.v || 0}/30）</span></span>
+            <span>名下客户 · ${a.client_cnt} 家 &nbsp;<span style="color:#93a0bd;font-weight:400;font-size:10px">（综合 ${a.total} = 规模分 ${a.p_rank || 0}/20 · 基建分 ${a.p_infra || 0}/50 · 协同 ${a.v || 0}/30）</span></span>
             <span style="display:flex;gap:6px"><a class="link" onclick="shotOneAgent(${i})">📸 截图</a><a class="link" onclick="window.open('${CLIENT_DASHBOARD_URL}','_blank')">客户榜 ↗</a></span>
           </h4>
           <div class="ct">${clientTableHtml(a)}</div>
@@ -649,7 +697,7 @@ function closeModal(id){document.getElementById(id).classList.remove("open")}
 
 function renderSlots(){
   const STAGE_TITLE={total:"🏅 总榜",w1:"🚀 第 1 周",w2:"🚀 第 2 周",w3:"🚀 第 3 周"};
-  const STAGE_SUB={total:"全周期数据",w1:"7/20-7/26",w2:"7/27-8/2",w3:"8/3-8/9"};
+  const STAGE_SUB={total:"全周期数据",w1:"7/20-7/26",w2:"7/27-8/2",w3:"活动整体 7/20-8/9"};
   document.getElementById("valueSlots").innerHTML=STAGES.map(s=>slotHtml(s,"value",STAGE_TITLE[s],STAGE_SUB[s])).join("");
   STAGES.forEach(s=>updateSlotStatus(s,"value"));
   renderInfraScoreEditor();
@@ -786,7 +834,7 @@ function buildShotCard(a,rank){
       <div class="item"><div class="k">${a.hasClientScore?a.p_client_avg.toFixed(1):"—"}</div><div class="v">客户平均分</div></div>
     </div>
     <div style="display:flex;gap:10px;font-size:12px;margin-bottom:8px">
-      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">榜单分 /20</div><div style="font-weight:700;font-size:16px;color:#4d7cff">${a.p_rank || 0}</div></div>
+      <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">规模分 /20</div><div style="font-weight:700;font-size:16px;color:#4d7cff">${a.p_rank || 0}</div></div>
       <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">基建分 /50</div><div style="font-weight:700;font-size:16px;color:#3b7a1f">${a.p_infra || 0}</div></div>
       <div style="flex:1;background:#f4f6fc;border-radius:8px;padding:10px;text-align:center"><div style="color:#93a0bd;font-size:10px">协同 /30</div><div style="font-weight:700;font-size:16px;color:#00c6a7">${a.v}</div></div>
     </div>
